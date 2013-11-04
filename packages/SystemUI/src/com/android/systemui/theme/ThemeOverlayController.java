@@ -400,7 +400,7 @@ public class ThemeOverlayController extends SystemUI implements Dumpable {
                 },
                 UserHandle.USER_ALL);
         mSecureSettings.registerContentObserverForUser(
-                Settings.Secure.getUriFor(Settings.Secure.SYSTEM_BLACK_THEME),
+                Settings.Secure.getUriFor(Settings.Secure.SYSTEM_CUSTOM_THEME),
                 false,
                 new ContentObserver(mBgHandler) {
                     @Override
@@ -656,9 +656,11 @@ public class ThemeOverlayController extends SystemUI implements Dumpable {
 
         boolean nightMode = (mContext.getResources().getConfiguration().uiMode
                 & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
-        boolean isBlackTheme = mSecureSettings.getInt(Settings.Secure.SYSTEM_BLACK_THEME, 0) == 1
-                                && nightMode;
-        mThemeManager.setIsBlackTheme(isBlackTheme);
+        int customTheme = mSecureSettings.getInt(Settings.Secure.SYSTEM_CUSTOM_THEME, 0);
+        // If custom Theme is 0, that would mean use default system dark theme 
+        boolean isCustomTheme = nightMode && (customTheme != 0);
+
+        mThemeManager.setIsCustomTheme(isCustomTheme);
 
         if (mNeedsOverlayCreation) {
             mNeedsOverlayCreation = false;
@@ -670,7 +672,7 @@ public class ThemeOverlayController extends SystemUI implements Dumpable {
                     managedProfiles);
         }
 
-        mThemeManager.applyBlackTheme(isBlackTheme);
+        mThemeManager.applyCustomTheme(customTheme, isCustomTheme);
     }
 
     private final ConfigurationListener mConfigurationListener = new ConfigurationListener() {
