@@ -204,6 +204,9 @@ import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.charging.WiredChargingRippleController;
 import com.android.systemui.statusbar.connectivity.NetworkController;
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler;
+import com.android.systemui.statusbar.VibratorHelper;
+import com.android.systemui.statusbar.VisualizerView;
+import com.android.systemui.statusbar.notification.ActivityLaunchAnimator;
 import com.android.systemui.statusbar.notification.DynamicPrivacyController;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.NotificationEntryManager;
@@ -474,6 +477,7 @@ public class StatusBar extends SystemUI implements
     protected PhoneStatusBarView mStatusBarView;
     private PhoneStatusBarViewController mPhoneStatusBarViewController;
     private AuthRippleController mAuthRippleController;
+    private VisualizerView mVisualizerView;
     private int mStatusBarWindowState = WINDOW_STATE_SHOWING;
     protected NotificationShadeWindowController mNotificationShadeWindowController;
     private final StatusBarWindowController mStatusBarWindowController;
@@ -1239,6 +1243,8 @@ public class StatusBar extends SystemUI implements
             }
         });
 
+        mVisualizerView = mNotificationShadeWindowView.findViewById(R.id.visualizerview);
+
         ScrimView scrimBehind = mNotificationShadeWindowView.findViewById(R.id.scrim_behind);
         ScrimView notificationsScrim = mNotificationShadeWindowView
                 .findViewById(R.id.scrim_notifications);
@@ -1650,6 +1656,14 @@ public class StatusBar extends SystemUI implements
 
     public NotificationShadeWindowView getNotificationShadeWindowView() {
         return mNotificationShadeWindowView;
+    }
+
+    public VisualizerView getVisualizerView() {
+        return mVisualizerView;
+    }
+
+    public StatusBarWindowView getStatusBarWindow() {
+        return mPhoneStatusBarWindow;
     }
 
     public NotificationShadeWindowViewController getNotificationShadeWindowViewController() {
@@ -3238,6 +3252,7 @@ public class StatusBar extends SystemUI implements
                 && visibleNotOccludedOrWillBe);
 
         mNotificationPanelViewController.setDozing(mDozing, animate, mWakeUpTouchLocation);
+        mVisualizerView.setDozing(mDozing);
         updateQsExpansionEnabled();
         Trace.endSection();
     }
@@ -3378,6 +3393,15 @@ public class StatusBar extends SystemUI implements
         } else {
             mContext.getMainExecutor().execute(mShadeController::collapsePanel);
         }
+        updateDozingState();
+        checkBarModes();
+        updateScrimController();
+        mPresenter.updateMediaMetaData(false, mState != StatusBarState.KEYGUARD);
+        mVisualizerView.setStatusBarState(newState);
+        updateKeyguardState();
+    
+        ((StatusBarIconControllerImpl) mIconController).setKeyguardShowing(mState == StatusBarState.KEYGUARD);
+        Trace.endSection();
     }
 
     /** Collapse the panel. The collapsing will be animated for the given {@code duration}. */
@@ -3696,12 +3720,17 @@ public class StatusBar extends SystemUI implements
         @Override
         public void onScreenTurnedOn() {
             mScrimController.onScreenTurnedOn();
+            mVisualizerView.setVisible(true);
         }
 
         @Override
         public void onScreenTurnedOff() {
             mFalsingCollector.onScreenOff();
             mScrimController.onScreenTurnedOff();
+            if (mNotificationPanelViewController.isQsExpanded()) {
+                mNotificationPanelViewController.closeQs();
+            }
+            mVisualizerView.setVisible(false);
             updateIsKeyguard();
         }
     };
