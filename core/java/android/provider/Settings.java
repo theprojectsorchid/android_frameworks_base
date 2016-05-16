@@ -5556,6 +5556,21 @@ public final class Settings {
          */
         public static final String USE_TILES_ON_SECURE_KEYGUARD = "use_tiles_on_secure_keyguard";
 
+ 
+        /**
+         * Change quick settings tiles animation style
+         *
+         * @hide
+         */
+        public static final String ANIM_TILE_STYLE = "anim_tile_style";
+
+        /**
+         * Change quick settings tiles animation duration
+         *
+         * @hide
+         */
+        public static final String ANIM_TILE_DURATION = "anim_tile_duration";
+
         /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
@@ -5583,7 +5598,6 @@ public final class Settings {
          * @hide
          */
         public static final String VOLUME_ROCKER_WAKE = "volume_rocker_wake";
-
         /**
          * @hide
          * Whether the phone vibrates on call connect
