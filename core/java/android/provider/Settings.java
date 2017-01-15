@@ -10355,6 +10355,13 @@ public final class Settings {
          * @hide
          */
         public static final int DISABLE_SCREENSHOT_TIMESTAMP_EXIF = 0;
+        
+        /**
+        * Whether to scramble a pin unlock layout
+         * @hide
+         */
+        public static final String SCRAMBLE_PIN_LAYOUT =
+            "lockscreen_scramble_pin_layout";
 
         /**
          * Whether or not to enable media resumption
