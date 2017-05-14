@@ -94,5 +94,10 @@ public class SystemSettings {
         Settings.System.ARTWORK_MEDIA_BACKGROUND_ENABLE_BLUR,
         Settings.System.ARTWORK_MEDIA_BACKGROUND_BLUR_RADIUS,
         Settings.System.ARTWORK_MEDIA_BACKGROUND_ALPHA,
+        Settings.System.STATUS_BAR_LOGO,
+        Settings.System.STATUS_BAR_LOGO_COLOR,
+        Settings.System.STATUS_BAR_LOGO_POSITION,
+        Settings.System.STATUS_BAR_LOGO_STYLE,
+        Settings.System.STATUS_BAR_LOGO_COLOR_ACCENT,
     };
 }
