@@ -64,4 +64,8 @@
     <!-- SystemUI Restart -->
     <java-symbol type="string" name="systemui_restart_title" />
     <java-symbol type="string" name="systemui_restart_message" />
+
+    
+ <!-- Sensor block -->
+  <java-symbol type="array" name="config_blockPackagesSensorDrain" />
 </resources>
