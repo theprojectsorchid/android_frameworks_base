@@ -5436,6 +5436,13 @@ public final class Settings {
         public static final String ADAPTIVE_PLAYBACK_TIMEOUT = "adaptive_playback_timeout";
 
         /**
+         * Sensor block per-package
+         * @hide
+         */
+        @Readable
+        public static final String SENSOR_BLOCK = "sensor_block";
+
+        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *
@@ -5644,6 +5651,7 @@ public final class Settings {
             PRIVATE_SETTINGS.add(BATTERY_LIGHT_REALLYFULL_COLOR);
             PRIVATE_SETTINGS.add(VOLUME_PANEL_ON_LEFT);
             PRIVATE_SETTINGS.add(FP_WAKE_UNLOCK);
+            PRIVATE_SETTINGS.add(SENSOR_BLOCK);
         }
 
         /**
