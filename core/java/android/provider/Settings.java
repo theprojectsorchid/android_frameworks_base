@@ -15665,6 +15665,18 @@ public final class Settings {
         public static final String ONE_HANDED_KEYGUARD_SIDE = "one_handed_keyguard_side";
 
         /**
+         * Enable blocking wakelock
+         * @hide
+         */
+        public static final String WAKELOCK_BLOCKING_ENABLED = "wakelock_blocking_enabled";
+
+         /**
+         * List of wakelock blocks selected
+         * @hide
+         */
+        public static final String WAKELOCK_BLOCKING_LIST = "wakelock_blocking_list";
+
+        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *
@@ -15682,7 +15694,6 @@ public final class Settings {
 
         // Populated lazily, guarded by class object:
         @UnsupportedAppUsage
-        private static final NameValueCache sNameValueCache = new NameValueCache(
                     CONTENT_URI,
                     CALL_METHOD_GET_GLOBAL,
                     CALL_METHOD_PUT_GLOBAL,
