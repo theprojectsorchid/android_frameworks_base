@@ -5571,7 +5571,13 @@ public final class Settings {
          */
         public static final String ANIM_TILE_DURATION = "anim_tile_duration";
 
-        /**
+        /** 
+         * @hide
+         */
+        private static final Validator ANIM_TILE_DURATION_VALIDATOR =
+              new SettingsValidators.InclusiveIntegerRangeValidator(500, 2500);
+
+	/**
          * Change quick settings tiles interpolator
          *
          * @hide
