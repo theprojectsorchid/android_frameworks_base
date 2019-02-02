@@ -74,6 +74,8 @@ import android.os.ShellCommand;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.DeviceConfig;
+import android.provider.Settings;
+import android.provider.Settings.Global;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.AtomicFile;
@@ -330,6 +332,9 @@ public class DeviceIdleController extends SystemService
     private final ArrayMap<IDeviceIdleConstraint, DeviceIdleConstraintTracker>
             mConstraints = new ArrayMap<>();
     private ConstraintController mConstraintController;
+
+    // Aggressive Idle
+    private boolean mAggressiveIdle = false;
 
     /** Device is currently active. */
     @VisibleForTesting
@@ -1257,192 +1262,123 @@ public class DeviceIdleController extends SystemService
          */
         public boolean USE_WINDOW_ALARMS = DEFAULT_USE_WINDOW_ALARMS;
 
-        private final boolean mSmallBatteryDevice;
+        private final ContentResolver mResolver;
+        private boolean mSmallBatteryDevice;
+        private final KeyValueListParser mParser = new KeyValueListParser(',');
 
-        public Constants() {
+        // Aggressive idle
+        private static final long AGGRESSIVE_WEIGHT = 3;
+
+        public Constants(Handler handler, ContentResolver resolver) {
+            super(handler);
+            mResolver = resolver;
             mSmallBatteryDevice = ActivityManager.isSmallBatteryDevice();
-            if (mSmallBatteryDevice) {
-                INACTIVE_TIMEOUT = DEFAULT_INACTIVE_TIMEOUT_SMALL_BATTERY;
-                IDLE_AFTER_INACTIVE_TIMEOUT = DEFAULT_IDLE_AFTER_INACTIVE_TIMEOUT_SMALL_BATTERY;
-            }
-            DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_DEVICE_IDLE,
-                    JobSchedulerBackgroundThread.getExecutor(), this);
-            // Load all the constants.
-            onPropertiesChanged(DeviceConfig.getProperties(DeviceConfig.NAMESPACE_DEVICE_IDLE));
+            mResolver.registerContentObserver(
+                    Settings.Global.getUriFor(Settings.Global.DEVICE_IDLE_CONSTANTS),
+                    false, this);
+            mResolver.registerContentObserver(
+                    Settings.Global.getUriFor(Settings.Global.AGGRESSIVE_IDLE_ENABLED),
+                    false, this);
+            updateConstants();
         }
 
 
         @Override
-        public void onPropertiesChanged(DeviceConfig.Properties properties) {
+        public void onChange(boolean selfChange, Uri uri) {
+            updateConstants();
+        }
+
+        private long getDurationWeighted(String key, long defaultValue) {
+            long duration = mParser.getDurationMillis(key, defaultValue);
+
+            if (mAggressiveIdle)
+                return duration / AGGRESSIVE_WEIGHT;
+
+            return duration;
+        }
+
+        private void updateConstants() {
             synchronized (DeviceIdleController.this) {
-                for (String name : properties.getKeyset()) {
-                    if (name == null) {
-                        continue;
-                    }
-                    switch (name) {
-                        case KEY_FLEX_TIME_SHORT:
-                            FLEX_TIME_SHORT = properties.getLong(
-                                    KEY_FLEX_TIME_SHORT, DEFAULT_FLEX_TIME_SHORT);
-                            break;
-                        case KEY_LIGHT_IDLE_AFTER_INACTIVE_TIMEOUT:
-                            LIGHT_IDLE_AFTER_INACTIVE_TIMEOUT = properties.getLong(
-                                    KEY_LIGHT_IDLE_AFTER_INACTIVE_TIMEOUT,
-                                    DEFAULT_LIGHT_IDLE_AFTER_INACTIVE_TIMEOUT);
-                            break;
-                        case KEY_LIGHT_PRE_IDLE_TIMEOUT:
-                            LIGHT_PRE_IDLE_TIMEOUT = properties.getLong(
-                                    KEY_LIGHT_PRE_IDLE_TIMEOUT, DEFAULT_LIGHT_PRE_IDLE_TIMEOUT);
-                            break;
-                        case KEY_LIGHT_IDLE_TIMEOUT:
-                            LIGHT_IDLE_TIMEOUT = properties.getLong(
-                                    KEY_LIGHT_IDLE_TIMEOUT, DEFAULT_LIGHT_IDLE_TIMEOUT);
-                            break;
-                        case KEY_LIGHT_IDLE_TIMEOUT_INITIAL_FLEX:
-                            LIGHT_IDLE_TIMEOUT_INITIAL_FLEX = properties.getLong(
-                                    KEY_LIGHT_IDLE_TIMEOUT_INITIAL_FLEX,
-                                    DEFAULT_LIGHT_IDLE_TIMEOUT_INITIAL_FLEX);
-                            break;
-                        case KEY_LIGHT_MAX_IDLE_TIMEOUT_FLEX:
-                            LIGHT_MAX_IDLE_TIMEOUT_FLEX = properties.getLong(
-                                    KEY_LIGHT_MAX_IDLE_TIMEOUT_FLEX,
-                                    DEFAULT_LIGHT_MAX_IDLE_TIMEOUT_FLEX);
-                            break;
-                        case KEY_LIGHT_IDLE_FACTOR:
-                            LIGHT_IDLE_FACTOR = Math.max(1, properties.getFloat(
-                                    KEY_LIGHT_IDLE_FACTOR, DEFAULT_LIGHT_IDLE_FACTOR));
-                            break;
-                        case KEY_LIGHT_MAX_IDLE_TIMEOUT:
-                            LIGHT_MAX_IDLE_TIMEOUT = properties.getLong(
-                                    KEY_LIGHT_MAX_IDLE_TIMEOUT, DEFAULT_LIGHT_MAX_IDLE_TIMEOUT);
-                            break;
-                        case KEY_LIGHT_IDLE_MAINTENANCE_MIN_BUDGET:
-                            LIGHT_IDLE_MAINTENANCE_MIN_BUDGET = properties.getLong(
-                                    KEY_LIGHT_IDLE_MAINTENANCE_MIN_BUDGET,
-                                    DEFAULT_LIGHT_IDLE_MAINTENANCE_MIN_BUDGET);
-                            break;
-                        case KEY_LIGHT_IDLE_MAINTENANCE_MAX_BUDGET:
-                            LIGHT_IDLE_MAINTENANCE_MAX_BUDGET = properties.getLong(
-                                    KEY_LIGHT_IDLE_MAINTENANCE_MAX_BUDGET,
-                                    DEFAULT_LIGHT_IDLE_MAINTENANCE_MAX_BUDGET);
-                            break;
-                        case KEY_MIN_LIGHT_MAINTENANCE_TIME:
-                            MIN_LIGHT_MAINTENANCE_TIME = properties.getLong(
-                                    KEY_MIN_LIGHT_MAINTENANCE_TIME,
-                                    DEFAULT_MIN_LIGHT_MAINTENANCE_TIME);
-                            break;
-                        case KEY_MIN_DEEP_MAINTENANCE_TIME:
-                            MIN_DEEP_MAINTENANCE_TIME = properties.getLong(
-                                    KEY_MIN_DEEP_MAINTENANCE_TIME,
-                                    DEFAULT_MIN_DEEP_MAINTENANCE_TIME);
-                            break;
-                        case KEY_INACTIVE_TIMEOUT:
-                            final long defaultInactiveTimeout = mSmallBatteryDevice
-                                    ? DEFAULT_INACTIVE_TIMEOUT_SMALL_BATTERY
-                                    : DEFAULT_INACTIVE_TIMEOUT;
-                            INACTIVE_TIMEOUT = properties.getLong(
-                                    KEY_INACTIVE_TIMEOUT, defaultInactiveTimeout);
-                            break;
-                        case KEY_SENSING_TIMEOUT:
-                            SENSING_TIMEOUT = properties.getLong(
-                                    KEY_SENSING_TIMEOUT, DEFAULT_SENSING_TIMEOUT);
-                            break;
-                        case KEY_LOCATING_TIMEOUT:
-                            LOCATING_TIMEOUT = properties.getLong(
-                                    KEY_LOCATING_TIMEOUT, DEFAULT_LOCATING_TIMEOUT);
-                            break;
-                        case KEY_LOCATION_ACCURACY:
-                            LOCATION_ACCURACY = properties.getFloat(
-                                    KEY_LOCATION_ACCURACY, DEFAULT_LOCATION_ACCURACY);
-                            break;
-                        case KEY_MOTION_INACTIVE_TIMEOUT:
-                            MOTION_INACTIVE_TIMEOUT = properties.getLong(
-                                    KEY_MOTION_INACTIVE_TIMEOUT, DEFAULT_MOTION_INACTIVE_TIMEOUT);
-                            break;
-                        case KEY_MOTION_INACTIVE_TIMEOUT_FLEX:
-                            MOTION_INACTIVE_TIMEOUT_FLEX = properties.getLong(
-                                    KEY_MOTION_INACTIVE_TIMEOUT_FLEX,
-                                    DEFAULT_MOTION_INACTIVE_TIMEOUT_FLEX);
-                            break;
-                        case KEY_IDLE_AFTER_INACTIVE_TIMEOUT:
-                            final long defaultIdleAfterInactiveTimeout = mSmallBatteryDevice
-                                    ? DEFAULT_IDLE_AFTER_INACTIVE_TIMEOUT_SMALL_BATTERY
-                                    : DEFAULT_IDLE_AFTER_INACTIVE_TIMEOUT;
-                            IDLE_AFTER_INACTIVE_TIMEOUT = properties.getLong(
-                                    KEY_IDLE_AFTER_INACTIVE_TIMEOUT,
-                                    defaultIdleAfterInactiveTimeout);
-                            break;
-                        case KEY_IDLE_PENDING_TIMEOUT:
-                            IDLE_PENDING_TIMEOUT = properties.getLong(
-                                    KEY_IDLE_PENDING_TIMEOUT, DEFAULT_IDLE_PENDING_TIMEOUT);
-                            break;
-                        case KEY_MAX_IDLE_PENDING_TIMEOUT:
-                            MAX_IDLE_PENDING_TIMEOUT = properties.getLong(
-                                    KEY_MAX_IDLE_PENDING_TIMEOUT, DEFAULT_MAX_IDLE_PENDING_TIMEOUT);
-                            break;
-                        case KEY_IDLE_PENDING_FACTOR:
-                            IDLE_PENDING_FACTOR = properties.getFloat(
-                                    KEY_IDLE_PENDING_FACTOR, DEFAULT_IDLE_PENDING_FACTOR);
-                            break;
-                        case KEY_QUICK_DOZE_DELAY_TIMEOUT:
-                            QUICK_DOZE_DELAY_TIMEOUT = properties.getLong(
-                                    KEY_QUICK_DOZE_DELAY_TIMEOUT, DEFAULT_QUICK_DOZE_DELAY_TIMEOUT);
-                            break;
-                        case KEY_IDLE_TIMEOUT:
-                            IDLE_TIMEOUT = properties.getLong(
-                                    KEY_IDLE_TIMEOUT, DEFAULT_IDLE_TIMEOUT);
-                            break;
-                        case KEY_MAX_IDLE_TIMEOUT:
-                            MAX_IDLE_TIMEOUT = properties.getLong(
-                                    KEY_MAX_IDLE_TIMEOUT, DEFAULT_MAX_IDLE_TIMEOUT);
-                            break;
-                        case KEY_IDLE_FACTOR:
-                            IDLE_FACTOR = properties.getFloat(KEY_IDLE_FACTOR, DEFAULT_IDLE_FACTOR);
-                            break;
-                        case KEY_MIN_TIME_TO_ALARM:
-                            MIN_TIME_TO_ALARM = properties.getLong(
-                                    KEY_MIN_TIME_TO_ALARM, DEFAULT_MIN_TIME_TO_ALARM);
-                            break;
-                        case KEY_MAX_TEMP_APP_ALLOWLIST_DURATION_MS:
-                            MAX_TEMP_APP_ALLOWLIST_DURATION_MS = properties.getLong(
-                                    KEY_MAX_TEMP_APP_ALLOWLIST_DURATION_MS,
-                                    DEFAULT_MAX_TEMP_APP_ALLOWLIST_DURATION_MS);
-                            break;
-                        case KEY_MMS_TEMP_APP_ALLOWLIST_DURATION_MS:
-                            MMS_TEMP_APP_ALLOWLIST_DURATION_MS = properties.getLong(
-                                    KEY_MMS_TEMP_APP_ALLOWLIST_DURATION_MS,
-                                    DEFAULT_MMS_TEMP_APP_ALLOWLIST_DURATION_MS);
-                            break;
-                        case KEY_SMS_TEMP_APP_ALLOWLIST_DURATION_MS:
-                            SMS_TEMP_APP_ALLOWLIST_DURATION_MS = properties.getLong(
-                                    KEY_SMS_TEMP_APP_ALLOWLIST_DURATION_MS,
-                                    DEFAULT_SMS_TEMP_APP_ALLOWLIST_DURATION_MS);
-                            break;
-                        case KEY_NOTIFICATION_ALLOWLIST_DURATION_MS:
-                            NOTIFICATION_ALLOWLIST_DURATION_MS = properties.getLong(
-                                    KEY_NOTIFICATION_ALLOWLIST_DURATION_MS,
-                                    DEFAULT_NOTIFICATION_ALLOWLIST_DURATION_MS);
-                            break;
-                        case KEY_WAIT_FOR_UNLOCK:
-                            WAIT_FOR_UNLOCK = properties.getBoolean(
-                                    KEY_WAIT_FOR_UNLOCK, DEFAULT_WAIT_FOR_UNLOCK);
-                            break;
-                        case KEY_PRE_IDLE_FACTOR_LONG:
-                            PRE_IDLE_FACTOR_LONG = properties.getFloat(
-                                    KEY_PRE_IDLE_FACTOR_LONG, DEFAULT_PRE_IDLE_FACTOR_LONG);
-                            break;
-                        case KEY_PRE_IDLE_FACTOR_SHORT:
-                            PRE_IDLE_FACTOR_SHORT = properties.getFloat(
-                                    KEY_PRE_IDLE_FACTOR_SHORT, DEFAULT_PRE_IDLE_FACTOR_SHORT);
-                            break;
-                        case KEY_USE_WINDOW_ALARMS:
-                            USE_WINDOW_ALARMS = properties.getBoolean(
-                                    KEY_USE_WINDOW_ALARMS, DEFAULT_USE_WINDOW_ALARMS);
-                            break;
-                        default:
-                            Slog.e(TAG, "Unknown configuration key: " + name);
-                            break;
-                    }
+                try {
+                    mParser.setString(Settings.Global.getString(mResolver,
+                            Settings.Global.DEVICE_IDLE_CONSTANTS));
+                    // Check if aggressive_standby_enabled has changed
+                    mAggressiveIdle = Settings.Global.getInt(mResolver,
+                        Settings.Global.AGGRESSIVE_IDLE_ENABLED) == 1;
+                } catch (Exception e) {
+                    // Failed to parse the settings string, log this and move on
+                    // with defaults.
+                    Slog.e(TAG, "Bad device idle settings", e);
+
+                    // Setting not found, assume false
+                    mAggressiveIdle = false;
                 }
+
+                LIGHT_IDLE_AFTER_INACTIVE_TIMEOUT = getDurationWeighted(
+                        KEY_LIGHT_IDLE_AFTER_INACTIVE_TIMEOUT,
+                        !COMPRESS_TIME ? 3 * 60 * 1000L : 15 * 1000L);
+                LIGHT_PRE_IDLE_TIMEOUT = getDurationWeighted(KEY_LIGHT_PRE_IDLE_TIMEOUT,
+                        !COMPRESS_TIME ? 3 * 60 * 1000L : 30 * 1000L);
+                LIGHT_IDLE_TIMEOUT = getDurationWeighted(KEY_LIGHT_IDLE_TIMEOUT,
+                        !COMPRESS_TIME ? 5 * 60 * 1000L : 15 * 1000L);
+                LIGHT_IDLE_FACTOR = mParser.getFloat(KEY_LIGHT_IDLE_FACTOR,
+                        2f);
+                LIGHT_MAX_IDLE_TIMEOUT = getDurationWeighted(KEY_LIGHT_MAX_IDLE_TIMEOUT,
+                        !COMPRESS_TIME ? 15 * 60 * 1000L : 60 * 1000L);
+                LIGHT_IDLE_MAINTENANCE_MIN_BUDGET = getDurationWeighted(
+                        KEY_LIGHT_IDLE_MAINTENANCE_MIN_BUDGET,
+                        !COMPRESS_TIME ? 1 * 60 * 1000L : 15 * 1000L);
+                LIGHT_IDLE_MAINTENANCE_MAX_BUDGET = getDurationWeighted(
+                        KEY_LIGHT_IDLE_MAINTENANCE_MAX_BUDGET,
+                        !COMPRESS_TIME ? 5 * 60 * 1000L : 30 * 1000L);
+                MIN_LIGHT_MAINTENANCE_TIME = getDurationWeighted(
+                        KEY_MIN_LIGHT_MAINTENANCE_TIME,
+                        !COMPRESS_TIME ? 5 * 1000L : 1 * 1000L);
+                MIN_DEEP_MAINTENANCE_TIME = getDurationWeighted(
+                        KEY_MIN_DEEP_MAINTENANCE_TIME,
+                        !COMPRESS_TIME ? 30 * 1000L : 5 * 1000L);
+                long inactiveTimeoutDefault = (mSmallBatteryDevice ? 15 : 30) * 60 * 1000L;
+                INACTIVE_TIMEOUT = getDurationWeighted(KEY_INACTIVE_TIMEOUT,
+                        !COMPRESS_TIME ? inactiveTimeoutDefault : (inactiveTimeoutDefault / 10));
+                SENSING_TIMEOUT = getDurationWeighted(KEY_SENSING_TIMEOUT,
+                        !COMPRESS_TIME ? 4 * 60 * 1000L : 60 * 1000L);
+                LOCATING_TIMEOUT = getDurationWeighted(KEY_LOCATING_TIMEOUT,
+                        !COMPRESS_TIME ? 30 * 1000L : 15 * 1000L);
+                LOCATION_ACCURACY = mParser.getFloat(KEY_LOCATION_ACCURACY, 20);
+                MOTION_INACTIVE_TIMEOUT = getDurationWeighted(KEY_MOTION_INACTIVE_TIMEOUT,
+                        !COMPRESS_TIME ? 10 * 60 * 1000L : 60 * 1000L);
+                long idleAfterInactiveTimeout = (mSmallBatteryDevice ? 15 : 30) * 60 * 1000L;
+                IDLE_AFTER_INACTIVE_TIMEOUT = getDurationWeighted(
+                        KEY_IDLE_AFTER_INACTIVE_TIMEOUT,
+                        !COMPRESS_TIME ? idleAfterInactiveTimeout
+                                       : (idleAfterInactiveTimeout / 10));
+                IDLE_PENDING_TIMEOUT = getDurationWeighted(KEY_IDLE_PENDING_TIMEOUT,
+                        !COMPRESS_TIME ? 5 * 60 * 1000L : 30 * 1000L);
+                MAX_IDLE_PENDING_TIMEOUT = getDurationWeighted(KEY_MAX_IDLE_PENDING_TIMEOUT,
+                        !COMPRESS_TIME ? 10 * 60 * 1000L : 60 * 1000L);
+                IDLE_PENDING_FACTOR = mParser.getFloat(KEY_IDLE_PENDING_FACTOR,
+                        2f);
+                QUICK_DOZE_DELAY_TIMEOUT = getDurationWeighted(
+                        KEY_QUICK_DOZE_DELAY_TIMEOUT, !COMPRESS_TIME ? 60 * 1000L : 15 * 1000L);
+                IDLE_TIMEOUT = getDurationWeighted(KEY_IDLE_TIMEOUT,
+                        !COMPRESS_TIME ? 60 * 60 * 1000L : 6 * 60 * 1000L);
+                MAX_IDLE_TIMEOUT = getDurationWeighted(KEY_MAX_IDLE_TIMEOUT,
+                        !COMPRESS_TIME ? 6 * 60 * 60 * 1000L : 30 * 60 * 1000L);
+                IDLE_FACTOR = mParser.getFloat(KEY_IDLE_FACTOR,
+                        2f);
+                MIN_TIME_TO_ALARM = getDurationWeighted(KEY_MIN_TIME_TO_ALARM,
+                        !COMPRESS_TIME ? 30 * 60 * 1000L : 6 * 60 * 1000L);
+                MAX_TEMP_APP_WHITELIST_DURATION = getDurationWeighted(
+                        KEY_MAX_TEMP_APP_WHITELIST_DURATION, 5 * 60 * 1000L);
+                MMS_TEMP_APP_WHITELIST_DURATION = getDurationWeighted(
+                        KEY_MMS_TEMP_APP_WHITELIST_DURATION, 60 * 1000L);
+                SMS_TEMP_APP_WHITELIST_DURATION = getDurationWeighted(
+                        KEY_SMS_TEMP_APP_WHITELIST_DURATION, 20 * 1000L);
+                NOTIFICATION_WHITELIST_DURATION = getDurationWeighted(
+                        KEY_NOTIFICATION_WHITELIST_DURATION, 30 * 1000L);
+                WAIT_FOR_UNLOCK = mParser.getBoolean(KEY_WAIT_FOR_UNLOCK, true);
+                PRE_IDLE_FACTOR_LONG = mParser.getFloat(KEY_PRE_IDLE_FACTOR_LONG, 1.67f);
+                PRE_IDLE_FACTOR_SHORT = mParser.getFloat(KEY_PRE_IDLE_FACTOR_SHORT, 0.33f);
             }
         }
 
@@ -1597,12 +1533,12 @@ public class DeviceIdleController extends SystemService
                 cancelSensingTimeoutAlarmLocked();
             }
         }
-        if ((result == AnyMotionDetector.RESULT_MOVED) ||
-            (result == AnyMotionDetector.RESULT_UNKNOWN)) {
+        if (((result == AnyMotionDetector.RESULT_MOVED) ||
+            (result == AnyMotionDetector.RESULT_UNKNOWN)) && !mAggressiveIdle) {
             synchronized (this) {
                 handleMotionDetectedLocked(mConstants.INACTIVE_TIMEOUT, "non_stationary");
             }
-        } else if (result == AnyMotionDetector.RESULT_STATIONARY) {
+        } else if ((result == AnyMotionDetector.RESULT_STATIONARY) || mAggressiveIdle) {
             if (mState == STATE_SENSING) {
                 // If we are currently sensing, it is time to move to locating.
                 synchronized (this) {

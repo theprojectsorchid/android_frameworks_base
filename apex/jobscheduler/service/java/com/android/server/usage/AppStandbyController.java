@@ -93,6 +93,7 @@ import android.os.SystemClock;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.provider.DeviceConfig;
+import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.telephony.TelephonyManager;
 import android.util.ArraySet;
@@ -2414,7 +2415,13 @@ public class AppStandbyController
                 COMPRESS_TIME ? ONE_MINUTE : ONE_DAY;
         public static final boolean DEFAULT_CROSS_PROFILE_APPS_SHARE_STANDBY_BUCKETS = true;
 
-        ConstantsObserver(Handler handler) {
+        // Aggressive standby
+        private boolean mAggressiveStandby = false;
+        private static final long AGGRESSIVE_WEIGHT = 3;
+
+        private final KeyValueListParser mParser = new KeyValueListParser(',');
+
+        SettingsObserver(Handler handler) {
             super(handler);
         }
 
@@ -2431,11 +2438,8 @@ public class AppStandbyController
             // ADAPTIVE_BATTERY_MANAGEMENT_ENABLED is a user setting, so it has to stay in Settings.
             cr.registerContentObserver(Global.getUriFor(Global.ADAPTIVE_BATTERY_MANAGEMENT_ENABLED),
                     false, this);
-            mInjector.registerDeviceConfigPropertiesChangedListener(this);
-            // Load all the constants.
-            // postOneTimeCheckIdleStates() doesn't need to be called on boot.
-            processProperties(mInjector.getDeviceConfigProperties());
-            updateSettings();
+            cr.registerContentObserver(Global.getUriFor(Global.AGGRESSIVE_STANDBY_ENABLED),
+                    false, this);
         }
 
         @Override
@@ -2444,109 +2448,13 @@ public class AppStandbyController
             postOneTimeCheckIdleStates();
         }
 
-        @Override
-        public void onPropertiesChanged(DeviceConfig.Properties properties) {
-            processProperties(properties);
-            postOneTimeCheckIdleStates();
-        }
+        private long getDurationWeighted(String key, long defaultValue) {
+            long duration = mParser.getDurationMillis(key, defaultValue);
 
-        private void processProperties(DeviceConfig.Properties properties) {
-            boolean timeThresholdsUpdated = false;
-            synchronized (mAppIdleLock) {
-                for (String name : properties.getKeyset()) {
-                    if (name == null) {
-                        continue;
-                    }
-                    switch (name) {
-                        case KEY_AUTO_RESTRICTED_BUCKET_DELAY_MS:
-                            mInjector.mAutoRestrictedBucketDelayMs = Math.max(
-                                    COMPRESS_TIME ? ONE_MINUTE : 2 * ONE_HOUR,
-                                    properties.getLong(KEY_AUTO_RESTRICTED_BUCKET_DELAY_MS,
-                                            DEFAULT_AUTO_RESTRICTED_BUCKET_DELAY_MS));
-                            break;
-                        case KEY_CROSS_PROFILE_APPS_SHARE_STANDBY_BUCKETS:
-                            mLinkCrossProfileApps = properties.getBoolean(
-                                    KEY_CROSS_PROFILE_APPS_SHARE_STANDBY_BUCKETS,
-                                    DEFAULT_CROSS_PROFILE_APPS_SHARE_STANDBY_BUCKETS);
-                            break;
-                        case KEY_INITIAL_FOREGROUND_SERVICE_START_HOLD_DURATION:
-                            mInitialForegroundServiceStartTimeoutMillis = properties.getLong(
-                                    KEY_INITIAL_FOREGROUND_SERVICE_START_HOLD_DURATION,
-                                    DEFAULT_INITIAL_FOREGROUND_SERVICE_START_TIMEOUT);
-                            break;
-                        case KEY_NOTIFICATION_SEEN_HOLD_DURATION:
-                            mNotificationSeenTimeoutMillis = properties.getLong(
-                                    KEY_NOTIFICATION_SEEN_HOLD_DURATION,
-                                    DEFAULT_NOTIFICATION_TIMEOUT);
-                            break;
-                        case KEY_STRONG_USAGE_HOLD_DURATION:
-                            mStrongUsageTimeoutMillis = properties.getLong(
-                                    KEY_STRONG_USAGE_HOLD_DURATION, DEFAULT_STRONG_USAGE_TIMEOUT);
-                            break;
-                        case KEY_PREDICTION_TIMEOUT:
-                            mPredictionTimeoutMillis = properties.getLong(
-                                    KEY_PREDICTION_TIMEOUT, DEFAULT_PREDICTION_TIMEOUT);
-                            break;
-                        case KEY_SYSTEM_INTERACTION_HOLD_DURATION:
-                            mSystemInteractionTimeoutMillis = properties.getLong(
-                                    KEY_SYSTEM_INTERACTION_HOLD_DURATION,
-                                    DEFAULT_SYSTEM_INTERACTION_TIMEOUT);
-                            break;
-                        case KEY_SYSTEM_UPDATE_HOLD_DURATION:
-                            mSystemUpdateUsageTimeoutMillis = properties.getLong(
-                                    KEY_SYSTEM_UPDATE_HOLD_DURATION, DEFAULT_SYSTEM_UPDATE_TIMEOUT);
-                            break;
-                        case KEY_SYNC_ADAPTER_HOLD_DURATION:
-                            mSyncAdapterTimeoutMillis = properties.getLong(
-                                    KEY_SYNC_ADAPTER_HOLD_DURATION, DEFAULT_SYNC_ADAPTER_TIMEOUT);
-                            break;
-                        case KEY_EXEMPTED_SYNC_SCHEDULED_DOZE_HOLD_DURATION:
-                            mExemptedSyncScheduledDozeTimeoutMillis = properties.getLong(
-                                    KEY_EXEMPTED_SYNC_SCHEDULED_DOZE_HOLD_DURATION,
-                                    DEFAULT_EXEMPTED_SYNC_SCHEDULED_DOZE_TIMEOUT);
-                            break;
-                        case KEY_EXEMPTED_SYNC_SCHEDULED_NON_DOZE_HOLD_DURATION:
-                            mExemptedSyncScheduledNonDozeTimeoutMillis = properties.getLong(
-                                    KEY_EXEMPTED_SYNC_SCHEDULED_NON_DOZE_HOLD_DURATION,
-                                    DEFAULT_EXEMPTED_SYNC_SCHEDULED_NON_DOZE_TIMEOUT);
-                            break;
-                        case KEY_EXEMPTED_SYNC_START_HOLD_DURATION:
-                            mExemptedSyncStartTimeoutMillis = properties.getLong(
-                                    KEY_EXEMPTED_SYNC_START_HOLD_DURATION,
-                                    DEFAULT_EXEMPTED_SYNC_START_TIMEOUT);
-                            break;
-                        case KEY_UNEXEMPTED_SYNC_SCHEDULED_HOLD_DURATION:
-                            mUnexemptedSyncScheduledTimeoutMillis = properties.getLong(
-                                    KEY_UNEXEMPTED_SYNC_SCHEDULED_HOLD_DURATION,
-                                    DEFAULT_UNEXEMPTED_SYNC_SCHEDULED_TIMEOUT);
-                            break;
-                        default:
-                            if (!timeThresholdsUpdated
-                                    && (name.startsWith(KEY_PREFIX_SCREEN_TIME_THRESHOLD)
-                                    || name.startsWith(KEY_PREFIX_ELAPSED_TIME_THRESHOLD))) {
-                                updateTimeThresholds();
-                                timeThresholdsUpdated = true;
-                            }
-                            break;
-                    }
-                }
-            }
-        }
+            if (mAggressiveStandby)
+                return duration / AGGRESSIVE_WEIGHT;
 
-        private void updateTimeThresholds() {
-            // Query the values as an atomic set.
-            final DeviceConfig.Properties screenThresholdProperties =
-                    mInjector.getDeviceConfigProperties(KEYS_SCREEN_TIME_THRESHOLDS);
-            final DeviceConfig.Properties elapsedThresholdProperties =
-                    mInjector.getDeviceConfigProperties(KEYS_ELAPSED_TIME_THRESHOLDS);
-            mAppStandbyScreenThresholds = generateThresholdArray(
-                    screenThresholdProperties, KEYS_SCREEN_TIME_THRESHOLDS,
-                    DEFAULT_SCREEN_TIME_THRESHOLDS, MINIMUM_SCREEN_TIME_THRESHOLDS);
-            mAppStandbyElapsedThresholds = generateThresholdArray(
-                    elapsedThresholdProperties, KEYS_ELAPSED_TIME_THRESHOLDS,
-                    DEFAULT_ELAPSED_TIME_THRESHOLDS, MINIMUM_ELAPSED_TIME_THRESHOLDS);
-            mCheckIdleIntervalMillis = Math.min(mAppStandbyElapsedThresholds[1] / 4,
-                    DEFAULT_CHECK_IDLE_INTERVAL_MS);
+            return duration;
         }
 
         void updateSettings() {
@@ -2557,9 +2465,96 @@ public class AppStandbyController
                 Slog.d(TAG,
                         "adaptivebat=" + Global.getString(mContext.getContentResolver(),
                                 Global.ADAPTIVE_BATTERY_MANAGEMENT_ENABLED));
+                Slog.d(TAG, "appidleconstants=" + Global.getString(
+                        mContext.getContentResolver(),
+                        Global.APP_IDLE_CONSTANTS));
+            }
+
+            // Check if aggressive_standby_enabled has changed
+            try {
+                mAggressiveStandby = Global.getInt(mContext.getContentResolver(),
+                        Global.AGGRESSIVE_STANDBY_ENABLED) == 1;
+            } catch (Exception e) {
+                // Setting not found, assume false
+                mAggressiveStandby = false;
+            }
+
+            // Look at global settings for this.
+            // TODO: Maybe apply different thresholds for different users.
+            try {
+                mParser.setString(mInjector.getAppIdleSettings());
+            } catch (IllegalArgumentException e) {
+                Slog.e(TAG, "Bad value for app idle settings: " + e.getMessage());
+                // fallthrough, mParser is empty and all defaults will be returned.
             }
 
             synchronized (mAppIdleLock) {
+
+                String screenThresholdsValue = mParser.getString(KEY_SCREEN_TIME_THRESHOLDS, null);
+                mAppStandbyScreenThresholds = parseLongArray(screenThresholdsValue,
+                        SCREEN_TIME_THRESHOLDS, MINIMUM_SCREEN_TIME_THRESHOLDS);
+
+                String elapsedThresholdsValue = mParser.getString(KEY_ELAPSED_TIME_THRESHOLDS,
+                        null);
+                mAppStandbyElapsedThresholds = parseLongArray(elapsedThresholdsValue,
+                        ELAPSED_TIME_THRESHOLDS, MINIMUM_ELAPSED_TIME_THRESHOLDS);
+                mCheckIdleIntervalMillis = Math.min(mAppStandbyElapsedThresholds[1] / 4,
+                        COMPRESS_TIME ? ONE_MINUTE : 4 * 60 * ONE_MINUTE); // 4 hours
+                mStrongUsageTimeoutMillis = getDurationWeighted(
+                        KEY_STRONG_USAGE_HOLD_DURATION,
+                                COMPRESS_TIME ? ONE_MINUTE : DEFAULT_STRONG_USAGE_TIMEOUT);
+                mNotificationSeenTimeoutMillis = getDurationWeighted(
+                        KEY_NOTIFICATION_SEEN_HOLD_DURATION,
+                                COMPRESS_TIME ? 12 * ONE_MINUTE : DEFAULT_NOTIFICATION_TIMEOUT);
+                mSystemUpdateUsageTimeoutMillis = getDurationWeighted(
+                        KEY_SYSTEM_UPDATE_HOLD_DURATION,
+                                COMPRESS_TIME ? 2 * ONE_MINUTE : DEFAULT_SYSTEM_UPDATE_TIMEOUT);
+                mPredictionTimeoutMillis = getDurationWeighted(
+                        KEY_PREDICTION_TIMEOUT,
+                                COMPRESS_TIME ? 10 * ONE_MINUTE : DEFAULT_PREDICTION_TIMEOUT);
+                mSyncAdapterTimeoutMillis = getDurationWeighted(
+                        KEY_SYNC_ADAPTER_HOLD_DURATION,
+                                COMPRESS_TIME ? ONE_MINUTE : DEFAULT_SYNC_ADAPTER_TIMEOUT);
+
+                mExemptedSyncScheduledNonDozeTimeoutMillis = getDurationWeighted(
+                        KEY_EXEMPTED_SYNC_SCHEDULED_NON_DOZE_HOLD_DURATION,
+                                COMPRESS_TIME ? (ONE_MINUTE / 2)
+                                        : DEFAULT_EXEMPTED_SYNC_SCHEDULED_NON_DOZE_TIMEOUT);
+
+                mExemptedSyncScheduledDozeTimeoutMillis = getDurationWeighted(
+                        KEY_EXEMPTED_SYNC_SCHEDULED_DOZE_HOLD_DURATION,
+                                COMPRESS_TIME ? ONE_MINUTE
+                                        : DEFAULT_EXEMPTED_SYNC_SCHEDULED_DOZE_TIMEOUT);
+
+                mExemptedSyncStartTimeoutMillis = getDurationWeighted(
+                        KEY_EXEMPTED_SYNC_START_HOLD_DURATION,
+                                COMPRESS_TIME ? ONE_MINUTE
+                                        : DEFAULT_EXEMPTED_SYNC_START_TIMEOUT);
+
+                mUnexemptedSyncScheduledTimeoutMillis = getDurationWeighted(
+                        KEY_UNEXEMPTED_SYNC_SCHEDULED_HOLD_DURATION,
+                                COMPRESS_TIME
+                                        ? ONE_MINUTE : DEFAULT_UNEXEMPTED_SYNC_SCHEDULED_TIMEOUT);
+
+                mSystemInteractionTimeoutMillis = getDurationWeighted(
+                        KEY_SYSTEM_INTERACTION_HOLD_DURATION,
+                                COMPRESS_TIME ? ONE_MINUTE : DEFAULT_SYSTEM_INTERACTION_TIMEOUT);
+
+                mInitialForegroundServiceStartTimeoutMillis = getDurationWeighted(
+                        KEY_INITIAL_FOREGROUND_SERVICE_START_HOLD_DURATION,
+                        COMPRESS_TIME ? ONE_MINUTE :
+                                DEFAULT_INITIAL_FOREGROUND_SERVICE_START_TIMEOUT);
+
+                mInjector.mAutoRestrictedBucketDelayMs = Math.max(
+                        COMPRESS_TIME ? ONE_MINUTE : 2 * ONE_HOUR,
+                        getDurationWeighted(KEY_AUTO_RESTRICTED_BUCKET_DELAY_MS,
+                                COMPRESS_TIME
+                                        ? ONE_MINUTE : DEFAULT_AUTO_RESTRICTED_BUCKET_DELAY_MS));
+
+                mLinkCrossProfileApps = mParser.getBoolean(
+                        KEY_CROSS_PROFILE_APPS_SHARE_STANDBY_BUCKETS,
+                        DEFAULT_CROSS_PROFILE_APPS_SHARE_STANDBY_BUCKETS);
+
                 mAllowRestrictedBucket = mInjector.isRestrictedBucketEnabled();
             }
 

@@ -14195,9 +14195,32 @@ public final class Settings {
                 "adb_allowed_connection_time";
 
         /**
-         * Scaling factor for normal window animations.
-         *
-         * The value is a float. Setting to 0.0f will disable window animations.
+         * Whether or not to use aggressive device idle constants and ignore motion.
+         * Type: int (0 for false, 1 for true)
+         * Default: 0
+         * @hide
+         */
+        public static final String AGGRESSIVE_IDLE_ENABLED = "aggressive_idle_enabled";
+
+        /**
+         * Whether or not to use aggressive app idle constants.
+         * Type: int (0 for false, 1 for true)
+         * Default: 0
+         * @hide
+         */
+        public static final String AGGRESSIVE_STANDBY_ENABLED = "aggressive_standby_enabled";
+
+        /**
+         * Flag to automatically enable Aggressive Idle and Standby with battery saver.
+         * Type: int (0 for false, 1 for true)
+         * Default: 0
+         * @hide
+         */
+        public static final String AGGRESSIVE_BATTERY_SAVER = "aggressive_battery_saver";
+
+        /**
+         * Scaling factor for normal window animations. Setting to 0 will
+         * disable window animations.
          */
         @Readable
         public static final String WINDOW_ANIMATION_SCALE = "window_animation_scale";
