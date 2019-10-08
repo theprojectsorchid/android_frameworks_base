@@ -70,8 +70,9 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
             "system:" + Settings.System.STATUS_BAR_BATTERY_STYLE;
     public static final String QS_BATTERY_STYLE =
             "system:" + Settings.System.QS_BATTERY_STYLE;
-    private static final String QS_SHOW_BATTERY_PERCENT =
-            "system:" + Settings.System.QS_SHOW_BATTERY_PERCENT;
+    public static final String STATUS_BAR_CUSTOM_HEADER =
+            "system:" + Settings.System.STATUS_BAR_CUSTOM_HEADER;
+
 
     private boolean mExpanded;
     private boolean mQsDisabled;
@@ -108,6 +109,8 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
     private QSExpansionPathInterpolator mQSExpansionPathInterpolator;
     private StatusBarContentInsetsProvider mInsetsProvider;
 
+    private boolean mLandscape;
+    private boolean mHeaderImageEnabled;
     private int mRoundedCornerPadding = 0;
     private int mStatusBarPaddingStart;
     private int mStatusBarPaddingEnd;
@@ -196,6 +199,7 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         Dependency.get(TunerService.class).addTunable(this,
                 STATUS_BAR_BATTERY_STYLE,
                 QS_BATTERY_STYLE,
+                STATUS_BAR_CUSTOM_HEADER,
                 QS_SHOW_BATTERY_PERCENT);
     }
 
@@ -242,6 +246,7 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        mLandscape = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE;
         updateResources();
         setDatePrivacyContainersWidth(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE);
         setSecurityHeaderContainerVisibility(
@@ -269,6 +274,12 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
             Intent todayIntent = new Intent(Intent.ACTION_VIEW, builder.build());
             mActivityStarter.postStartActivityDismissingKeyguard(todayIntent, 0);
         }
+        if (mHeaderImageEnabled) {
+            qqsHeight += mContext.getResources().getDimensionPixelSize(
+                    R.dimen.qs_header_image_offset);
+        }
+
+        setMinimumHeight(sbHeight + qqsHeight);
     }
 
     @Override
@@ -329,6 +340,13 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
                 R.dimen.status_bar_padding_end);
 
         int qsOffsetHeight = SystemBarUtils.getQuickQsOffsetHeight(mContext);
+        
+        int topMargin = resources.getDimensionPixelSize(
+            com.android.internal.R.dimen.quick_qs_offset_height) + (mHeaderImageEnabled ?
+            resources.getDimensionPixelSize(R.dimen.qs_header_image_offset) : 0);
+
+    mSystemIconsView.getLayoutParams().height = topMargin;
+    mSystemIconsView.setLayoutParams(mSystemIconsView.getLayoutParams());
 
         mDatePrivacyView.getLayoutParams().height =
                 Math.max(qsOffsetHeight, mDatePrivacyView.getMinimumHeight());
@@ -340,38 +358,18 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
 
         ViewGroup.LayoutParams lp = getLayoutParams();
         if (mQsDisabled) {
-            lp.height = mStatusIconsView.getLayoutParams().height;
+            lp.height = topMargin;
         } else {
             lp.height = WRAP_CONTENT;
         }
         setLayoutParams(lp);
 
-        int textColor = Utils.getColorAttrDefaultColor(mContext, android.R.attr.textColorPrimary);
-        if (textColor != mTextColorPrimary) {
-            int isCircleBattery = Settings.System.getIntForUser(
-                    mContext.getContentResolver(), Settings.System.STATUS_BAR_BATTERY_STYLE,
-                    0, UserHandle.USER_CURRENT);
-            int textColorSecondary = Utils.getColorAttrDefaultColor(mContext,
-                    (isCircleBattery == 1 || isCircleBattery == 2 || isCircleBattery == 3)
-                    ? android.R.attr.textColorHint : android.R.attr.textColorSecondary);
-            mTextColorPrimary = textColor;
-            mClockView.setTextColor(textColor);
-            if (mTintedIconManager != null) {
-                mTintedIconManager.setTint(textColor);
-            }
-            mBatteryRemainingIcon.updateColors(mTextColorPrimary, textColorSecondary,
-                    mTextColorPrimary);
-        }
+        updateStatusIconAlphaAnimator();
+        updateHeaderTextContainerAlphaAnimator();
+        updatePrivacyChipAlphaAnimator();
 
-        MarginLayoutParams qqsLP = (MarginLayoutParams) mHeaderQsPanel.getLayoutParams();
-        qqsLP.topMargin = shouldUseSplitShade || !mUseCombinedQSHeader ? mContext.getResources()
-                .getDimensionPixelSize(R.dimen.qqs_layout_margin_top) : qsOffsetHeight;
-        mHeaderQsPanel.setLayoutParams(qqsLP);
-
-        updateHeadersPadding();
-        updateAnimators();
-
-        updateClockDatePadding();
+        boolean shouldUseWallpaperTextColor = mLandscape && !mHeaderImageEnabled;
+        mClockView.useWallpaperTextColor(shouldUseWallpaperTextColor);
     }
 
     private void updateClockDatePadding() {
@@ -680,6 +678,11 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
             case QS_SHOW_BATTERY_PERCENT:
                 mBatteryRemainingIcon.setBatteryPercent(
                         TunerService.parseInteger(newValue, 2));
+                break;
+            case STATUS_BAR_CUSTOM_HEADER:
+                mHeaderImageEnabled =
+                        TunerService.parseIntegerSwitch(newValue, false);
+                updateResources();
                 break;
             default:
                 break;
