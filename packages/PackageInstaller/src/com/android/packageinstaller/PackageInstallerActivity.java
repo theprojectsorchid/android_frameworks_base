@@ -141,7 +141,7 @@ public class PackageInstallerActivity extends AlertActivity {
             viewToEnable = requireViewById(R.id.install_confirm_question_update);
             oldVersionView = requireViewById(R.id.installed_app_version);
             ((TextView)oldVersionView).setText(
-                    getString(com.android.internal.R.string.old_version_number, oldInfo.versionName));
+                    getString(R.string.old_version_number, oldInfo.versionName));
             oldVersionView.setVisibility(View.VISIBLE);
             mOk.setText(R.string.update);
         } else {
@@ -150,7 +150,7 @@ public class PackageInstallerActivity extends AlertActivity {
         }
         newVersionView = requireViewById(R.id.updating_app_version);
         ((TextView)newVersionView).setText(
-                getString(com.android.internal.R.string.new_version_number, mPkgInfo.versionName));
+                getString(R.string.new_version_number, mPkgInfo.versionName));
         viewToEnable.setVisibility(View.VISIBLE);
         newVersionView.setVisibility(View.VISIBLE);
 
