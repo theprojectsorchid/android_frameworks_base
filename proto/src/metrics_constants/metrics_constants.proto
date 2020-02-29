@@ -7448,5 +7448,8 @@ message MetricsEvent {
     // project orchid Metrics
     ORCHIDOS_SETTINGS = 6772;    
     
+
+    // Panel for Bluetooth
+    PANEL_BLUETOOTH = 2003;
   }
 }
