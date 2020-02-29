@@ -17418,11 +17418,23 @@ public final class Settings {
         @SdkConstant(SdkConstant.SdkConstantType.ACTIVITY_INTENT_ACTION)
         public static final String ACTION_VOLUME =
                 "android.settings.panel.action.VOLUME";
+
+        /**
+         * Activity Action: Show a settings dialog containing controls for Mobile Data.
+         * <p>
+         * Input: Nothing.
+         * <p>
+         * Output: Nothing.
+         * @hide
+         */
+        @SdkConstant(SdkConstant.SdkConstantType.ACTIVITY_INTENT_ACTION)
+        public static final String ACTION_MOBILE_DATA =
+                "android.settings.panel.action.MOBILE_DATA";
+
     }
 
     /**
      * Activity Action: Show setting page to process the addition of Wi-Fi networks to the user's
-     * saved network list. The app should send a new intent with an extra that holds a maximum
      * of five {@link android.net.wifi.WifiNetworkSuggestion} that specify credentials for the
      * networks to be added to the user's database. The Intent should be sent via the
      * {@link android.app.Activity#startActivityForResult(Intent, int)} API.
