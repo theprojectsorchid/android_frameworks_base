@@ -5464,6 +5464,17 @@ public final class Settings {
          * @hide
          */
 	public static final String DISABLE_USERCARD = "disable_usercard";
+        /**
+        * List of alarms blocks selected
+        * @hide
+        */
+       public static final String ALARM_BLOCKING_LIST = "alarm_blocking_list";
+
+       /**
+        * Enable blocking alarm
+        * @hide
+        */
+       public static final String ALARM_BLOCKING_ENABLED = "alarm_blocking_enabled";
 
         /**
          * Keys we no longer back up under the current schema, but want to continue to

@@ -1292,6 +1292,17 @@ public class AlarmManager {
         }
     }
 
+    /** @hide */
+    public String getSeenAlarms() {
+        try {
+            if (mService != null) {
+                return mService.getSeenAlarms();
+            }
+        } catch (RemoteException e) {
+        }
+        return null;
+    }
+
     /**
      * Called to check if the caller can schedule exact alarms.
      * Your app schedules exact alarms when it calls any of the {@code setExact...} or
