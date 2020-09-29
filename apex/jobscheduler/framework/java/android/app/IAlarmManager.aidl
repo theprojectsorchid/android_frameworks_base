@@ -44,4 +44,7 @@ interface IAlarmManager {
     boolean canScheduleExactAlarms(String packageName);
     boolean hasScheduleExactAlarm(String packageName, int userId);
     int getConfigVersion();
+
+    // blocked alarms support
+    String getSeenAlarms();
 }

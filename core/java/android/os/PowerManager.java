@@ -2976,6 +2976,19 @@ public final class PowerManager {
     /**
      * @hide
      */
+    public String getSeenWakeLocks() {
+        try {
+            if (mService != null) {
+                return mService.getSeenWakeLocks();
+            }
+        } catch (RemoteException e) {
+        }
+        return null;
+    }
+    
+    /**
+     * @hide
+     */
     public static void invalidateIsInteractiveCaches() {
         PropertyInvalidatedCache.invalidateCache(CACHE_KEY_IS_INTERACTIVE_PROPERTY);
     }
