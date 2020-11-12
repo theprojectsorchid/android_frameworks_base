@@ -5511,6 +5511,20 @@ public final class Settings {
          * @hide
          */
         public static final String ENABLE_RIPPLE_EFFECT = "enable_ripple_effect";
+     
+        /**
+         * reTicker Status
+         * @hide
+         */
+        @Readable
+        public static final String RETICKER_STATUS = "reticker_status";
+
+        /**
+         * reTicker Colored
+         * @hide
+         */
+        @Readable
+        public static final String RETICKER_COLORED = "reticker_colored";
 
 	/**
          * Whether to show data usage in qs footer
