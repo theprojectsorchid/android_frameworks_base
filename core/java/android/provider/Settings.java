@@ -5578,6 +5578,12 @@ public final class Settings {
         public static final String FORCE_FULLSCREEN_CUTOUT_APPS = "force_full_screen_cutout_apps";
 
        /**
+         * Settings Dashboard Style
+         * @hide
+         */
+        public static final String SETTINGS_DASHBOARD_GMS = "settings_dashboard_gms";
+
+       /**
          * These are all public system settings
          *
          * @hide
