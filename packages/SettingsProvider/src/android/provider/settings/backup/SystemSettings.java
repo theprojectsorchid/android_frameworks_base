@@ -90,5 +90,9 @@ public class SystemSettings {
         Settings.System.NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD,
         Settings.System.FP_WAKE_UNLOCK,
         Settings.System.NOTIFICATION_HEADERS,
+        Settings.System.ARTWORK_MEDIA_BACKGROUND,
+        Settings.System.ARTWORK_MEDIA_BACKGROUND_ENABLE_BLUR,
+        Settings.System.ARTWORK_MEDIA_BACKGROUND_BLUR_RADIUS,
+        Settings.System.ARTWORK_MEDIA_BACKGROUND_ALPHA,
     };
 }
