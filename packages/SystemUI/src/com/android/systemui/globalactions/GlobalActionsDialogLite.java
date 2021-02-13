@@ -179,6 +179,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private static final String GLOBAL_ACTION_KEY_REBOOT_BOOTLOADER = "reboot_bootloader";
     private static final String GLOBAL_ACTION_KEY_ONTHEGO = "onthego";
 
+    private static final String GLOBAL_ACTION_KEY_ADVANCED_RESTART = "advanced";
+
     private static final int RESTART_RECOVERY_BUTTON = 1;
     private static final int RESTART_BOOTLOADER_BUTTON = 2;
     private static final int RESTART_UI_BUTTON = 3;
@@ -819,11 +821,18 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             } else if (GLOBAL_ACTION_KEY_ASSIST.equals(actionKey)) {
                 addIfShouldShowAction(tempActions, getAssistAction());
             } else if (GLOBAL_ACTION_KEY_RESTART.equals(actionKey)) {
-                addIfShouldShowAction(tempActions, restartAction);
-                // if Restart action is available, add advanced restart actions too
-                addIfShouldShowAction(tempActions, restartBootloaderAction);
-                addIfShouldShowAction(tempActions, restartRecoveryAction);
-                addIfShouldShowAction(tempActions, restartSystemUiAction);
+                if (Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.POWERMENU_RESTART, 1) == 1) {
+                    addIfShouldShowAction(tempActions, restartAction);
+                }
+            } else if (GLOBAL_ACTION_KEY_ADVANCED_RESTART.equals(actionKey)) {
+                if (Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.POWERMENU_ADVANCED, 1) == 1) {
+                    mPowerItems.add(restartRecoveryAction);
+                    mPowerItems.add(restartBootloaderAction);
+                    mPowerItems.add(restartSystemUiAction);
+                    addIfShouldShowAction(tempActions, new PowerOptionsAction());
+                }
             } else if (GLOBAL_ACTION_KEY_SCREENSHOT.equals(actionKey)) {
                 addIfShouldShowAction(tempActions, new ScreenshotAction());
             } else if (GLOBAL_ACTION_KEY_LOGOUT.equals(actionKey)) {
@@ -841,37 +850,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             addedKeys.add(actionKey);
         }
 
-        // replace power and restart with a single power options action, if needed
-         if (usePowerOptionsMenu(tempActions, shutdownAction, restartAction)) {
-            mUsePowerOptions = true;
-            // transfer shutdown and restart to their own list of power actions
-            int powerOptionsIndex = Math.min(tempActions.indexOf(restartAction),
-                    tempActions.indexOf(shutdownAction));
-            tempActions.remove(shutdownAction);
-            tempActions.remove(restartAction);
-            tempActions.remove(restartBootloaderAction);
-            tempActions.remove(restartRecoveryAction);
-            tempActions.remove(restartSystemUiAction);
-            if (tempActions.contains(shutdownAction)) {
-                mPowerItems.add(shutdownAction); // will be removed later if needed
-            }
-            mPowerItems.add(restartAction);
-            if (advancedRebootEnabled(mContext)) {
-                mPowerItems.add(rbtRecoveryAction);
-                mPowerItems.add(rbtBlAction);
-            }
-
-            // add the PowerOptionsAction after Emergency, if present
-            tempActions.add(powerOptionsIndex, new PowerOptionsAction());
-        }
-        // Add also Power to power actions list, if needed
-        if (tempActions.contains(shutdownAction) && mPowerItems.size() > 1
-                /*tempActions.size gets in count already PowerOptionsAction if added*/
-                && tempActions.size() > getMaxShownPowerItems()) {
-            tempActions.remove(shutdownAction);
-        } else {
-            mPowerItems.remove(shutdownAction);
-        }
         for (Action action : tempActions) {
             addActionItem(action);
         }
