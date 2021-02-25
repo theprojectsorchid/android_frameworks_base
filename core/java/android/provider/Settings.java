@@ -16771,7 +16771,13 @@ public final class Settings {
         @Readable
         public static final String MAXIMUM_OBSCURING_OPACITY_FOR_TOUCH =
                 "maximum_obscuring_opacity_for_touch";
-
+               
+        /**
+        * The amount of time in milliseconds before wifi is turned off
+        * @hide
+        */
+        public static final String WIFI_OFF_TIMEOUT = "wifi_off_timeout";
+       
         /**
          * Used to enable / disable the Restricted Networking Mode in which network access is
          * restricted to apps holding the CONNECTIVITY_USE_RESTRICTED_NETWORKS permission.
