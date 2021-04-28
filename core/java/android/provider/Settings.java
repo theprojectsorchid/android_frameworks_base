@@ -4237,6 +4237,13 @@ public final class Settings {
          */
         @Readable
         public static final String FONT_SCALE = "font_scale";
+       
+        /**
+         * Sensor block per-package
+         * @hide
+         */
+        @Readable
+        public static final String SENSOR_BLOCK = "sensor_block";
 
         /**
          * The serialized system locale value.
@@ -5648,6 +5655,7 @@ public final class Settings {
             PRIVATE_SETTINGS.add(BATTERY_LIGHT_REALLYFULL_COLOR);
             PRIVATE_SETTINGS.add(VOLUME_PANEL_ON_LEFT);
             PRIVATE_SETTINGS.add(FP_WAKE_UNLOCK);
+            PRIVATE_SETTINGS.add(SENSOR_BLOCK);
         }
 
         /**
@@ -17692,3 +17700,4 @@ public final class Settings {
         return packages[0];
     }
 }
+
