@@ -51,6 +51,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.hardware.input.InputManager;
 import android.hardware.fingerprint.FingerprintManager;
+import android.location.LocationManager;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -371,6 +372,7 @@ public class CrystalUtils {
         private NotificationManager mNotificationManager;
         private WifiManager mWifiManager;
         private SensorPrivacyManager mSensorPrivacyManager;
+        private LocationManager mLocationManager;
         private BluetoothAdapter mBluetoothAdapter;
         private int mSubscriptionId;
         private Toast mToast;
@@ -399,6 +401,7 @@ public class CrystalUtils {
             mAudioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             mNotificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
             mWifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
+            mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
             mSensorPrivacyManager = (SensorPrivacyManager) mContext.getSystemService(Context.SENSOR_PRIVACY_SERVICE);
             mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             mSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
@@ -459,14 +462,25 @@ public class CrystalUtils {
             }
         }
 
-        private int getLocationMode() {
-            return Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                    Settings.Secure.LOCATION_MODE, Settings.Secure.LOCATION_MODE_OFF, UserHandle.USER_CURRENT);
+        private boolean isLocationEnabled() {
+            if (mLocationManager == null) {
+                mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+            }
+            try {
+                return mLocationManager.isLocationEnabledForUser(UserHandle.of(ActivityManager.getCurrentUser()));
+            } catch (Exception e) {
+                return false;
+            }
         }
 
-        private void setLocationMode(int mode) {
-            Settings.Secure.putIntForUser(mContext.getContentResolver(),
-                    Settings.Secure.LOCATION_MODE, mode, UserHandle.USER_CURRENT);
+        private void setLocationEnabled(boolean enable) {
+            if (mLocationManager == null) {
+                mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+            }
+            try {
+                mLocationManager.setLocationEnabledForUser(enable, UserHandle.of(ActivityManager.getCurrentUser()));
+            } catch (Exception e) {
+            }
         }
 
         private boolean isBluetoothEnabled() {

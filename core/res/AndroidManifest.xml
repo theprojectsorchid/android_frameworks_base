@@ -716,6 +716,9 @@
     <!-- Scarlet Services -->
     <protected-broadcast android:name="android.intent.action.SCARLET_SERVICES" />  
 
+    <!-- Sleep Mode -->
+    <protected-broadcast android:name="android.intent.action.SLEEP_MODE_TURN_OFF" />
+
     <!-- ====================================================================== -->
     <!--                          RUNTIME PERMISSIONS                           -->
     <!-- ====================================================================== -->
