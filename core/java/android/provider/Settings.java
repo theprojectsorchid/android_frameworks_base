@@ -5427,6 +5427,129 @@ public final class Settings {
          */
         public static final String ON_THE_GO_CAMERA = "on_the_go_camera";
 
+	/**
+         * @hide
+         */
+        public static final String USE_TILES_ON_SECURE_KEYGUARD = "use_tiles_on_secure_keyguard";
+
+ 
+        /**
+         * Change quick settings tiles animation style
+         *
+         * @hide
+         */
+        public static final String ANIM_TILE_STYLE = "anim_tile_style";
+
+        /**
+         * Change quick settings tiles animation duration
+         *
+         * @hide
+         */
+        public static final String ANIM_TILE_DURATION = "anim_tile_duration";
+
+        /**
+         * Change quick settings tiles interpolator
+         *
+         * @hide
+         */
+        public static final String ANIM_TILE_INTERPOLATOR = "anim_tile_interpolator";
+
+        /**
+         * Transparent power menu and dialogs
+         * @hide
+         */
+        public static final String TRANSPARENT_POWER_MENU = "transparent_power_menu";
+
+        /**
+         * Dim amount around power/reboot menu dialogs
+         * @hide
+         */
+        public static final String TRANSPARENT_POWER_DIALOG_DIM = "transparent_power_dialog_dim";
+
+        /**
+         * Whether to display set of animations when prompting the power menu
+         *
+         * @hide
+         */
+        public static final String POWER_MENU_ANIMATIONS = "power_menu_animations";
+
+        /**
+         * Whether to display sound panel in the power menu
+         *
+         * @hide
+         */
+        public static final String POWERMENU_SOUNDPANEL = "powermenu_soundpanel";
+
+         /**
+         * Whether to display screenshot in the power menu
+         *
+         * @hide
+         */
+        public static final String POWERMENU_SCREENSHOT = "powermenu_screenshot";
+
+         /**
+         * Whether to display settings in the power menu
+         *
+         * @hide
+         */
+        public static final String POWERMENU_SETTINGS = "powermenu_settings";
+
+         /**
+         * Whether to display lock in the power menu
+         *
+         * @hide
+         */
+        public static final String POWERMENU_LOCKDOWN = "powermenu_lockdown";
+
+         /**
+         * Whether to display airplane in the power menu
+         *
+         * @hide
+         */
+        public static final String POWERMENU_AIRPLANE = "powermenu_airplane";
+
+         /**
+         * Whether to display reboot in the power menu
+         *
+         * @hide
+         */
+        public static final String POWERMENU_RESTART = "powermenu_restart";
+
+         /**
+         * Whether to display reboot in the power menu
+         *
+         * @hide
+         */
+        public static final String POWERMENU_ADVANCED = "powermenu_advanced";
+
+         /**
+         * Whether to display power in the power menu
+         *
+         * @hide
+         */
+        public static final String POWERMENU_POWER = "powermenu_power";
+
+         /**
+         * Whether to display the users option in the power menu
+         *
+         * @hide
+         */
+        public static final String POWERMENU_USERS = "powermenu_users";
+
+         /**
+         * Whether to display the users option in the power menu
+         *
+         * @hide
+         */
+        public static final String POWERMENU_LOGOUT = "powermenu_logout";
+
+         /**
+         * Whether to display the users option in the power menu
+         *
+         * @hide
+         */
+        public static final String POWERMENU_EMERGENCY = "powermenu_emergency";
+
         /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
@@ -10640,6 +10763,13 @@ public final class Settings {
                 "device_state_rotation_lock";
 
         /**
+         * Control whether FLAG_SECURE is ignored for all windows.
+         * @hide
+         */
+        @Readable
+        public static final String WINDOW_IGNORE_SECURE = "window_ignore_secure";
+
+        /**
          * These entries are considered common between the personal and the managed profile,
          * since the managed profile doesn't get to change them.
          */
@@ -10683,7 +10813,6 @@ public final class Settings {
             INSTANT_APP_SETTINGS.add(ACCESSIBILITY_CAPTIONING_WINDOW_COLOR);
             INSTANT_APP_SETTINGS.add(ACCESSIBILITY_DISPLAY_DALTONIZER_ENABLED);
             INSTANT_APP_SETTINGS.add(ACCESSIBILITY_DISPLAY_DALTONIZER);
-            INSTANT_APP_SETTINGS.add(ACCESSIBILITY_AUTOCLICK_DELAY);
             INSTANT_APP_SETTINGS.add(ACCESSIBILITY_AUTOCLICK_ENABLED);
             INSTANT_APP_SETTINGS.add(ACCESSIBILITY_LARGE_POINTER_ICON);
 
