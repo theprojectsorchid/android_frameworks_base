@@ -66,7 +66,7 @@ import com.android.systemui.statusbar.phone.SystemUIDialog;
 import javax.inject.Inject;
 
 /** Quick settings tile: Cellular **/
-public class CellularTile extends QSTileImpl<SignalState> {
+public class CellularTile extends SecureQSTile<SignalState> {
     private static final String ENABLE_SETTINGS_DATA_PLAN = "enable.settings.data.plan";
 
     private final NetworkController mController;
@@ -88,7 +88,7 @@ public class CellularTile extends QSTileImpl<SignalState> {
             NetworkController networkController
     ) {
         super(host, backgroundLooper, mainHandler, falsingManager, metricsLogger,
-                statusBarStateController, activityStarter, qsLogger);
+                statusBarStateController, activityStarter, qsLogger, keyguardStateController);
         mController = networkController;
         mDataController = mController.getMobileDataController();
         mDetailAdapter = new CellularDetailAdapter();
@@ -119,7 +119,11 @@ public class CellularTile extends QSTileImpl<SignalState> {
     }
 
     @Override
-    protected void handleClick(@Nullable View view) {
+    protected void handleClick(@Nullable View view, boolean keyguardShowing) {
+        if (checkKeyguard(view, keyguardShowing)) {
+            return;
+        }
+
         if (getState().state == Tile.STATE_UNAVAILABLE) {
             return;
         }
