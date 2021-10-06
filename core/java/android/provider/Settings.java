@@ -5550,6 +5550,12 @@ public final class Settings {
          */
         public static final String POWERMENU_EMERGENCY = "powermenu_emergency";
 
+ 	
+	/**
+         * @hide
+         */
+        public static final String USE_TILES_ON_SECURE_KEYGUARD = "use_tiles_on_secure_keyguard";
+
         /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
@@ -5587,7 +5593,6 @@ public final class Settings {
 
          /**
          * Whether the phone vibrates on call waiting
-         * @hide
          */
         public static final String VIBRATE_ON_CALLWAITING = "vibrate_on_callwaiting";
 
