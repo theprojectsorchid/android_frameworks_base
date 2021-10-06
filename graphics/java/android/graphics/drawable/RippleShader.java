@@ -112,7 +112,7 @@ final class RippleShader extends RuntimeShader {
             + "    float finalAlpha = (0.5 + waveAlpha * waveFade) * fade * in_color.a + dither;\n"
             + "    vec4 finalColor = vec4(in_color.rgb * finalAlpha, finalAlpha);\n"
             + "\n"
-            + "    float mask = in_hasMask == 1.0 ? sample(in_shader, pos).a > 0.0 ? 1.0 : 0.0 : "
+            + "    float mask = in_hasMask == 1.0 ? in_shader.eval(pos).a > 0.0 ? 1.0 : 0.0 : "
             + "1.0;\n"
             + "    return finalColor * mask;\n"
             + "}";
