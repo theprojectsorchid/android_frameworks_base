@@ -27,6 +27,19 @@
         <item name="seekBarPreferenceStyle">@style/SettingsSeekbarPreference.SettingsLib</item>
         <item name="footerPreferenceStyle">@style/Preference.Material</item>
     </style>
+    
+    <style name="PreferenceTheme.SettingsLib.Home" parent="@style/PreferenceThemeOverlay">
+        <item name="preferenceCategoryTitleTextAppearance">@style/TextAppearance.CategoryTitle.SettingsLib</item>
+        <item name="preferenceCategoryStyle">@style/SettingsCategoryPreference.SettingsLib</item>
+        <item name="preferenceStyle">@style/SettingsPreference.SettingsLib.Home</item>
+        <item name="checkBoxPreferenceStyle">@style/SettingsCheckBoxPreference.SettingsLib</item>
+        <item name="dialogPreferenceStyle">@style/SettingsPreference.SettingsLib</item>
+        <item name="editTextPreferenceStyle">@style/SettingsEditTextPreference.SettingsLib</item>
+        <item name="dropdownPreferenceStyle">@style/SettingsDropdownPreference.SettingsLib</item>
+        <item name="switchPreferenceStyle">@style/SettingsSwitchPreference.SettingsLib</item>
+        <item name="seekBarPreferenceStyle">@style/SettingsSeekbarPreference.SettingsLib</item>
+        <item name="footerPreferenceStyle">@style/Preference.Material</item>
+    </style>
 
     <style name="SettingsCategoryPreference.SettingsLib" parent="@style/Preference.Category.Material">
         <item name="iconSpaceReserved">@bool/settingslib_config_icon_space_reserved</item>
@@ -36,6 +49,11 @@
 
     <style name="SettingsPreference.SettingsLib" parent="@style/Preference.Material">
         <item name="layout">@layout/settingslib_preference</item>
+        <item name="iconSpaceReserved">@bool/settingslib_config_icon_space_reserved</item>
+    </style>
+
+    <style name="SettingsPreference.SettingsLib.Home" parent="@style/Preference.Material">
+        <item name="layout">@layout/settingslib_home_preference</item>
         <item name="iconSpaceReserved">@bool/settingslib_config_icon_space_reserved</item>
     </style>
 
