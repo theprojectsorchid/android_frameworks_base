@@ -36,5 +36,4 @@
         android:layout_height="wrap_content"
         app:maxWidth="48dp"
         app:maxHeight="48dp"/>
-
 </LinearLayout>
