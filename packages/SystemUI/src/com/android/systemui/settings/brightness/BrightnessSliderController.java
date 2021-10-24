@@ -55,6 +55,8 @@ public class BrightnessSliderController extends ViewController<BrightnessSliderV
     private final FalsingManager mFalsingManager;
     private ImageView mIconView;
 
+    private ImageView mIconView;
+
     private final Gefingerpoken mOnInterceptListener = new Gefingerpoken() {
         @Override
         public boolean onInterceptTouchEvent(MotionEvent ev) {
