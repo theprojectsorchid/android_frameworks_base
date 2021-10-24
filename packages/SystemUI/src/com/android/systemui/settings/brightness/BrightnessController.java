@@ -350,6 +350,7 @@ public class BrightnessController implements ToggleSlider.Listener, MirroredBrig
 
     @Override
     public void onChanged(boolean tracking, int value, boolean stopTracking) {
+        //updateIcon(mAutomatic);
         if (mExternalChange) return;
 
         if (mSliderAnimator != null) {
@@ -417,11 +418,8 @@ public class BrightnessController implements ToggleSlider.Listener, MirroredBrig
     private void updateIcon(boolean automatic) {
         if (mIcon != null) {
             mIcon.setImageResource(automatic ?
-                    R.drawable.ic_qs_brightness_auto_on :
-                    R.drawable.ic_qs_brightness_auto_off);
-            mIcon.setBackgroundResource(automatic ?
-                    R.drawable.bg_qs_brightness_auto_on :
-                    R.drawable.bg_qs_brightness_auto_off);
+                    com.android.systemui.R.drawable.ic_qs_brightness_auto_on_new :
+                    com.android.systemui.R.drawable.ic_qs_brightness_auto_off_new);
         }
     }
 
