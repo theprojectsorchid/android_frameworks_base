@@ -25,11 +25,11 @@
         android:layout_height="wrap_content"
         android:layout_width="0dp"
         android:layout_weight="1"
-        android:layout_gravity="center_vertical"
+        android:layout_gravity="center"
         android:maxLines="2"
         android:ellipsize="end"
         android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.ActionBar.Title"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:textColor="?android:attr/textColorPrimaryInverse"
         android:layout_marginStart="@dimen/settingslib_switchbar_subsettings_margin_start"
         android:textAlignment="viewStart"/>
