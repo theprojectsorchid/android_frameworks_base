@@ -196,5 +196,6 @@ public class SecureSettings {
         Settings.Secure.TETHERING_ALLOW_VPN_UPSTREAMS,
         Settings.Secure.POWER_MENU_HIDE_ON_SECURE,
         Settings.Secure.SYSTEM_BLACK_THEME,
+        Settings.Secure.ENABLE_LOCATION_PRIVACY_INDICATOR,
     };
 }
