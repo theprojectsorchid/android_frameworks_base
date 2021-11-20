@@ -3526,8 +3526,8 @@ public class WindowManagerService extends IWindowManager.Stub
 
     // Called by window manager policy.  Not exposed externally.
     @Override
-    public void rebootCustom(String reason, boolean confirm) {
-        ShutdownThread.rebootCustom(ActivityThread.currentActivityThread().getSystemUiContext(), reason, confirm);
+    public void advancedReboot(String reason, boolean confirm) {
+        ShutdownThread.advancedReboot(ActivityThread.currentActivityThread().getSystemUiContext(), reason, confirm);
     }
 
     public void setCurrentProfileIds(final int[] currentProfileIds) {

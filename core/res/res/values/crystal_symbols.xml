@@ -31,4 +31,7 @@
     <java-symbol type="style" name="GlobalActionsAnimationXylon" />
     <java-symbol type="style" name="GlobalActionsAnimationCard" />
 
+    <!-- Global Actions pref list -->
+    <java-symbol type="array" name="custom_config_globalActionsList" />
+
 </resources>

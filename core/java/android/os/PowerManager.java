@@ -1756,9 +1756,9 @@ public final class PowerManager {
      *               request special boot modes, or null.
      * @hide
      */
-    public void rebootCustom(String reason) {
+    public void advancedReboot(String reason) {
         try {
-            mService.rebootCustom(false, reason, true);
+            mService.advancedReboot(false, reason, true);
         } catch (RemoteException e) {
         }
     }

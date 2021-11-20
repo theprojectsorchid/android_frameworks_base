@@ -294,7 +294,7 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
         void reboot(String reason, boolean confirm);
 
         /** @hide */
-        void rebootCustom(String reason, boolean confirm);
+        void advancedReboot(String reason, boolean confirm);
 
         /**
          * Return the window manager lock needed to correctly call "Lw" methods.

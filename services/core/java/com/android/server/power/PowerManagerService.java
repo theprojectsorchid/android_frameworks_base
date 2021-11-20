@@ -3637,7 +3637,7 @@ public final class PowerManagerService extends SystemService
                         ShutdownThread.rebootSafeMode(getUiContext(), confirm);
                     } else if (haltMode == HALT_MODE_REBOOT) {
                         if (custom) {
-                            ShutdownThread.rebootCustom(getUiContext(), reason, confirm);
+                            ShutdownThread.advancedReboot(getUiContext(), reason, confirm);
                         } else {
                             ShutdownThread.reboot(getUiContext(), reason, confirm);
                         }
@@ -5750,6 +5750,28 @@ public final class PowerManagerService extends SystemService
         }
 
         /**
+         * Reboots the device with custom progress message.
+         *
+         * @param confirm If true, shows a reboot confirmation dialog.
+         * @param reason The reason for the reboot, or null if none.
+         * @param wait If true, this call waits for the reboot to complete and does not return.
+         */
+        @Override // Binder call
+        public void advancedReboot(boolean confirm, String reason, boolean wait) {
+            mContext.enforceCallingOrSelfPermission(android.Manifest.permission.REBOOT, null);
+            if (PowerManager.REBOOT_RECOVERY.equals(reason)) {
+                mContext.enforceCallingOrSelfPermission(android.Manifest.permission.RECOVERY, null);
+            }
+
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                shutdownOrRebootInternal(HALT_MODE_REBOOT, confirm, reason, wait, true);
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+        }
+
+        /**
          * Reboots the device into safe mode
          *
          * @param confirm If true, shows a reboot confirmation dialog.
@@ -5764,28 +5786,6 @@ public final class PowerManagerService extends SystemService
             final long ident = Binder.clearCallingIdentity();
             try {
                 shutdownOrRebootInternal(HALT_MODE_REBOOT_SAFE_MODE, confirm, reason, wait, false);
-            } finally {
-                Binder.restoreCallingIdentity(ident);
-            }
-        }
-
-        /**
-         * Reboots the device with custom progress message.
-         *
-         * @param confirm If true, shows a reboot confirmation dialog.
-         * @param reason The reason for the reboot, or null if none.
-         * @param wait If true, this call waits for the reboot to complete and does not return.
-         */
-        @Override // Binder call
-        public void rebootCustom(boolean confirm, String reason, boolean wait) {
-            mContext.enforceCallingOrSelfPermission(android.Manifest.permission.REBOOT, null);
-            if (PowerManager.REBOOT_RECOVERY.equals(reason)) {
-                mContext.enforceCallingOrSelfPermission(android.Manifest.permission.RECOVERY, null);
-            }
-
-            final long ident = Binder.clearCallingIdentity();
-            try {
-                shutdownOrRebootInternal(HALT_MODE_REBOOT, confirm, reason, wait, true);
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }

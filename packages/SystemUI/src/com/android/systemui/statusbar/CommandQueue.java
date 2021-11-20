@@ -285,7 +285,7 @@ public class CommandQueue extends IStatusBar.Stub implements
         default void showPinningEnterExitToast(boolean entering) { }
         default void showPinningEscapeToast() { }
         default void handleShowGlobalActionsMenu() { }
-        default void handleShowShutdownUi(boolean isReboot, String reason, boolean rebootCustom) { }
+        default void handleShowShutdownUi(boolean isReboot, String reason, boolean advancedReboot) { }
 
         default void showWirelessChargingAnimation(int batteryLevel) {  }
 
@@ -837,10 +837,10 @@ public class CommandQueue extends IStatusBar.Stub implements
     }
 
     @Override
-    public void showShutdownUi(boolean isReboot, String reason, boolean rebootCustom) {
+    public void showShutdownUi(boolean isReboot, String reason, boolean advancedReboot) {
         synchronized (mLock) {
             mHandler.removeMessages(MSG_SHOW_SHUTDOWN_UI);
-            mHandler.obtainMessage(MSG_SHOW_SHUTDOWN_UI, isReboot ? 1 : 0, rebootCustom ? 1 : 0, reason)
+            mHandler.obtainMessage(MSG_SHOW_SHUTDOWN_UI, isReboot ? 1 : 0, advancedReboot ? 1 : 0, reason)
                     .sendToTarget();
         }
     }
