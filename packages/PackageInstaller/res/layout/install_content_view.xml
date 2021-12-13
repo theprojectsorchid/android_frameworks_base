@@ -123,7 +123,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@android:style/TextAppearance.Material.Small"
-                android:text="@string/new_version_number"
+                android:text="@string/new_version_number" />
         </LinearLayout>
 
     <TextView
