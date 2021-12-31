@@ -128,6 +128,7 @@ import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.keyguard.ViewMediatorCallback;
 import com.android.systemui.ActivityIntentHelper;
+import com.android.systemui.ScarletIdleManager;
 import com.android.systemui.AutoReinflateContainer;
 import com.android.systemui.DejankUtils;
 import com.android.systemui.Dependency;
@@ -533,6 +534,7 @@ public class StatusBar extends SystemUI implements
     protected NotificationPanelViewController mNotificationPanelViewController;
 
    // Arcane Idle
+   // Scarlet Idle
     private boolean isIdleManagerIstantiated = false;
 
     // settings
@@ -3601,6 +3603,18 @@ public class StatusBar extends SystemUI implements
                     ArcaneIdleManager.executeManager();
                 } else {
                     ArcaneIdleManager.executeManager();
+
+            if (Settings.System.getIntForUser(mContext.getContentResolver(),
+                                              Settings.System.SCARLET_IDLE_ASSISTANT_MANAGER, 1,
+                                              mLockscreenUserManager.getCurrentUserId()) == 1) {
+                if (!isIdleManagerIstantiated) {
+                    ScarletIdleManager.initializeAssistant(mContext);
+                    isIdleManagerIstantiated = true;
+                    ScarletIdleManager.startAssistantServices();
+                    ScarletIdleManager.cacheCleaner(CentralSurfaces.getPackageManagerForUser(mContext, mLockscreenUserManager.getCurrentUserId()));
+                } else {
+                    ScarletIdleManager.startAssistantServices();
+                    ScarletIdleManager.cacheCleaner(CentralSurfaces.getPackageManagerForUser(mContext, mLockscreenUserManager.getCurrentUserId()));
                 }
             }
         }
@@ -3639,6 +3653,12 @@ public class StatusBar extends SystemUI implements
                 ArcaneIdleManager.haltManager();
             }
 
+
+            if (Settings.System.getIntForUser(mContext.getContentResolver(),
+                                              Settings.System.SCARLET_IDLE_ASSISTANT_MANAGER, 1,
+                                              mLockscreenUserManager.getCurrentUserId()) == 1) {
+                ScarletIdleManager.stopManager(mContext);
+            }
         }
 
         @Override
