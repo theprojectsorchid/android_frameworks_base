@@ -119,6 +119,7 @@ android_library {
         "dagger2",
         "jsr330",
         "lottie",
+        "android.hardware.power.stats-V1-java",
     ],
     manifest: "AndroidManifest.xml",
 
@@ -208,6 +209,7 @@ android_library {
         "dagger2",
         "jsr330",
         "WindowManager-Shell",
+        "android.hardware.power.stats-V1-java",
     ],
     libs: [
         "android.test.runner",

@@ -5589,6 +5589,13 @@ public final class Settings {
          * @hide
          */
         public static final String QS_FOOTER_DATA_USAGE = "qs_footer_data_usage";
+       
+        /**
+         * Scarlet Idle Assistant Manager
+         * @hide
+         */
+        @Readable
+        public static final String SCARLET_IDLE_ASSISTANT_MANAGER = "scarlet_idle_assistant_manager";
 
         /**
          * Wheter to show network traffic indicator in statusbar
