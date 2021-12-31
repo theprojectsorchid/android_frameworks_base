@@ -128,6 +128,7 @@ import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.keyguard.ViewMediatorCallback;
 import com.android.systemui.ActivityIntentHelper;
+import com.android.systemui.SystemManagerUtils;
 import com.android.systemui.AutoReinflateContainer;
 import com.android.systemui.DejankUtils;
 import com.android.systemui.Dependency;
@@ -529,6 +530,9 @@ public class StatusBar extends SystemUI implements
     // expanded notifications
     // the sliding/resizing panel within the notification window
     protected NotificationPanelViewController mNotificationPanelViewController;
+
+   // System Manager
+    private boolean isSysManagerIstantiated = false;
 
     // settings
     private QSPanelController mQSPanelController;
@@ -3587,6 +3591,33 @@ public class StatusBar extends SystemUI implements
             }
 
             DejankUtils.stopDetectingBlockingIpcs(tag);
+            if (!isSysManagerIstantiated) {
+                SystemManagerUtils.initSystemManager(mContext);
+                isSysManagerIstantiated = true;
+                SystemManagerUtils.startIdleService(mContext);
+                SystemManagerUtils.cacheCleaner(CentralSurfaces.getPackageManagerForUser(mContext, mLockscreenUserManager.getCurrentUserId()));
+                int runtimePowerMode = Settings.System.getIntForUser(mContext.getContentResolver(),
+                                            Settings.System.SYSTEM_MANAGER_RUNTIME_POWER_MODE, 0, mLockscreenUserManager.getCurrentUserId());
+                SystemManagerUtils.runtimePowerModeHandler(false, runtimePowerMode);
+                if (Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                                        Settings.Secure.SYSTEM_MANAGER_AGGRESSIVE_IDLE_MODE, 0, mLockscreenUserManager.getCurrentUserId()) == 1) {
+                    Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                                        Settings.Secure.SYSTEM_MANAGER_AGGRESSIVE_IDLE_MODE_TRIGGER, 1,
+                                        mLockscreenUserManager.getCurrentUserId());
+                }
+            } else {
+                SystemManagerUtils.startIdleService(mContext);
+                SystemManagerUtils.cacheCleaner(CentralSurfaces.getPackageManagerForUser(mContext, mLockscreenUserManager.getCurrentUserId()));
+                int runtimePowerMode = Settings.System.getIntForUser(mContext.getContentResolver(),
+                                            Settings.System.SYSTEM_MANAGER_RUNTIME_POWER_MODE, 0, mLockscreenUserManager.getCurrentUserId());
+                SystemManagerUtils.runtimePowerModeHandler(false, runtimePowerMode);
+                if (Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                                        Settings.Secure.SYSTEM_MANAGER_AGGRESSIVE_IDLE_MODE, 0, mLockscreenUserManager.getCurrentUserId()) == 1) {
+                    Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                                        Settings.Secure.SYSTEM_MANAGER_AGGRESSIVE_IDLE_MODE_TRIGGER, 1,
+                                        mLockscreenUserManager.getCurrentUserId());
+                }
+            }
         }
 
         @Override
@@ -3617,6 +3648,16 @@ public class StatusBar extends SystemUI implements
 
             });
             DejankUtils.stopDetectingBlockingIpcs(tag);
+            SystemManagerUtils.cancelIdleService();
+    	    int runtimePowerMode = Settings.System.getIntForUser(mContext.getContentResolver(),
+                                            Settings.System.SYSTEM_MANAGER_RUNTIME_POWER_MODE, 0, mLockscreenUserManager.getCurrentUserId());
+            SystemManagerUtils.runtimePowerModeHandler(true, runtimePowerMode);
+            if (Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                                            Settings.Secure.SYSTEM_MANAGER_AGGRESSIVE_IDLE_MODE, 0, mLockscreenUserManager.getCurrentUserId()) == 1) {
+                    Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                                                Settings.Secure.SYSTEM_MANAGER_AGGRESSIVE_IDLE_MODE_TRIGGER, 0,
+                                                mLockscreenUserManager.getCurrentUserId());
+            }
         }
 
         @Override
