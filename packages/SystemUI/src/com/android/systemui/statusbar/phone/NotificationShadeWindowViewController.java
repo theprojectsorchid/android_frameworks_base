@@ -111,6 +111,9 @@ public class NotificationShadeWindowViewController {
     private final PanelExpansionStateManager mPanelExpansionStateManager;
     private final StatusBarWindowController mStatusBarWindowController;
 
+    private ImageView mAutoBrightnessIcon;
+    private boolean mShowAutoBrightnessButton;
+
     // Used for determining view / touch intersection
     private int[] mTempLocation = new int[2];
     private RectF mTempRect = new RectF();
@@ -118,6 +121,8 @@ public class NotificationShadeWindowViewController {
 
     // custom additions start
     private boolean mDoubleTapEnabledNative;
+    private static final String QS_SHOW_AUTO_BRIGHTNESS =
+            Settings.Secure.QS_SHOW_AUTO_BRIGHTNESS;
 
     @Inject
     public NotificationShadeWindowViewController(
@@ -174,6 +179,8 @@ public class NotificationShadeWindowViewController {
 
         // This view is not part of the newly inflated expanded status bar.
         mBrightnessMirror = mView.findViewById(R.id.brightness_mirror_container);
+        mAutoBrightnessIcon = (ImageView)
+                mBrightnessMirror.findViewById(R.id.brightness_icon);
     }
 
     /**
@@ -201,6 +208,13 @@ public class NotificationShadeWindowViewController {
                 case Settings.Secure.DOUBLE_TAP_TO_WAKE:
                     mDoubleTapEnabledNative = Settings.Secure.getIntForUser(mView.getContext().getContentResolver(),
                             Settings.Secure.DOUBLE_TAP_TO_WAKE, 0, UserHandle.USER_CURRENT) == 1;
+                case QS_SHOW_AUTO_BRIGHTNESS:
+                    mShowAutoBrightnessButton =
+                            TunerService.parseIntegerSwitch(newValue, true);
+                    if (mAutoBrightnessIcon != null) {
+                        mAutoBrightnessIcon.setVisibility(
+                                mShowAutoBrightnessButton ? View.VISIBLE : View.GONE);
+                    }
                     break;
             }
         };
@@ -208,6 +222,7 @@ public class NotificationShadeWindowViewController {
                 Settings.Secure.DOZE_DOUBLE_TAP_GESTURE,
                 Settings.Secure.DOZE_TAP_SCREEN_GESTURE,
                 Settings.Secure.DOUBLE_TAP_TO_WAKE);
+                QS_SHOW_AUTO_BRIGHTNESS);
 
         GestureDetector.SimpleOnGestureListener gestureListener =
                 new GestureDetector.SimpleOnGestureListener() {
@@ -451,12 +466,10 @@ public class NotificationShadeWindowViewController {
             public void onChildViewAdded(View parent, View child) {
                 if (child.getId() == R.id.brightness_mirror_container) {
                     mBrightnessMirror = child;
-                    ImageView autoBrightnessIcon =
+                    mAutoBrightnessIcon = (ImageView)
                             child.findViewById(R.id.brightness_icon);
-                    boolean show = Settings.Secure.getInt(
-                            autoBrightnessIcon.getContext().getContentResolver(),
-                            Settings.Secure.QS_SHOW_AUTO_BRIGHTNESS_BUTTON, 1) == 1;
-                    autoBrightnessIcon.setVisibility(show ? View.VISIBLE : View.GONE);
+                    mAutoBrightnessIcon.setVisibility(mShowAutoBrightnessButton
+                            ? View.VISIBLE : View.GONE);
                 }
             }
 
