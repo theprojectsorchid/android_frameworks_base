@@ -6077,8 +6077,72 @@ public class NotificationManagerService extends SystemService {
             // FLAG_FOREGROUND_SERVICE. Hence it's not enough to remove
             // FLAG_FOREGROUND_SERVICE, we have to revert to the flags we received
             // initially *and* force remove FLAG_FOREGROUND_SERVICE.
-            sbn.getNotification().flags =
-                    (r.mOriginalFlags & ~FLAG_FOREGROUND_SERVICE);
+            sbn.getNotification().flags = (r.mOriginalFlags & ~FLAG_FOREGROUND_SERVICE);
+        }
+
+        @Override
+        public int getNumNotificationChannelsForPackage(String pkg, int uid,
+                boolean includeDeleted) {
+            return NotificationManagerService.this
+                    .getNumNotificationChannelsForPackage(pkg, uid, includeDeleted);
+        }
+
+        @Override
+        public boolean areNotificationsEnabledForPackage(String pkg, int uid) {
+            return areNotificationsEnabledForPackageInt(pkg, uid);
+        }
+
+        @Override
+        public void sendReviewPermissionsNotification() {
+            if (!mShowReviewPermissionsNotification) {
+                // don't show if this notification is turned off
+                return;
+            }
+
+            // This method is meant to be called from the JobService upon running the job for this
+            // notification having been rescheduled; so without checking any other state, it will
+            // send the notification.
+            checkCallerIsSystem();
+            NotificationManager nm = getContext().getSystemService(NotificationManager.class);
+            nm.notify(TAG,
+                    SystemMessageProto.SystemMessage.NOTE_REVIEW_NOTIFICATION_PERMISSIONS,
+                    createReviewPermissionsNotification());
+            Settings.Global.putInt(getContext().getContentResolver(),
+                    Settings.Global.REVIEW_PERMISSIONS_NOTIFICATION_STATE,
+                    NotificationManagerService.REVIEW_NOTIF_STATE_RESHOWN);
+        }
+
+        @Override
+        public void cleanupHistoryFiles() {
+            checkCallerIsSystem();
+            mHistoryManager.cleanupHistoryFiles();
+        }
+
+        @Override
+        public void updateSecureNotifications(String pkg, boolean isContentSecure,
+                boolean isBubbleUpSuppressed, int userId) {
+            mHandler.post(() -> updateSecureNotificationsInternal(pkg, isContentSecure,
+                isBubbleUpSuppressed, userId));
+        }
+
+        private void updateSecureNotificationsInternal(String pkg, boolean isContentSecure,
+                boolean isBubbleUpSuppressed, int userId) {
+            synchronized (mNotificationLock) {
+                for (int i = 0; i < mNotificationList.size(); i++) {
+                    final NotificationRecord nr = mNotificationList.get(i);
+                    final StatusBarNotification sbn = nr.getSbn();
+                    if (UserHandle.getUserId(sbn.getUid()) == userId
+                            && sbn.getPackageName().equals(pkg)) {
+                        if (sbn.getIsContentSecure() != isContentSecure ||
+                                nr.isBubbleUpSuppressedByAppLock() != isBubbleUpSuppressed) {
+                            sbn.setIsContentSecure(isContentSecure);
+                            nr.setBubbleUpSuppressedByAppLock(isBubbleUpSuppressed);
+                            mListeners.notifyPostedLocked(nr, nr);
+                        }
+                    }
+                }
+            }
+            mRankingHandler.requestSort();
         }
     };
 

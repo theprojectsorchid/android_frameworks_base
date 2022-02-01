@@ -523,4 +523,24 @@ public class StatusBarNotification implements Parcelable {
         return logTag.substring(0, MAX_LOG_TAG_LENGTH - hash.length() - 1) + "-"
                 + hash;
     }
+
+    /**
+     * Set whether the notification content is secure.
+     *
+     * @param isContentSecure whether the content is secure.
+     * @hide
+     */
+    public void setIsContentSecure(boolean isContentSecure) {
+        mIsContentSecure = isContentSecure;
+    }
+
+    /**
+     * Check whether the notification content is secure.
+     *
+     * @return true if content is secure, false otherwise.
+     * @hide
+     */
+    public boolean getIsContentSecure() {
+        return mIsContentSecure;
+    }
 }
