@@ -5698,6 +5698,14 @@ public abstract class Context {
     public static final String DISPLAY_HASH_SERVICE = "display_hash";
 
     /**
+     * {@link AppLockManager}.
+     *
+     * @see #getSystemService(String)
+     * @hide
+     */
+    public static final String APP_LOCK_SERVICE = "app_lock";
+
+    /**
      * Determine whether the given permission is allowed for a particular
      * process and user ID running in the system.
      *
@@ -5747,7 +5755,6 @@ public abstract class Context {
      */
     @CheckResult(suggest="#enforceCallingPermission(String,String)")
     @PackageManager.PermissionResult
-    public abstract int checkCallingPermission(@NonNull String permission);
 
     /**
      * Determine whether the calling process of an IPC <em>or you</em> have been
