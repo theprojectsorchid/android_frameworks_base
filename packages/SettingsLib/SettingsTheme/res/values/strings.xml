@@ -15,25 +15,7 @@
 -->
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- Name of a font family to use for headlines in SettingsLib. -->
-    <string name="settingslib_config_headlineFontFamily" translatable="false">
-        @*android:string/config_headlineFontFamily
-    </string>
-
-    <!-- Name of a font family to use for headlines-medium in SettingsLib. -->
-    <string name="settingslib_config_headlineFontFamilyMedium" translatable="false">
-        @*android:string/config_headlineFontFamilyMedium
-    </string>
-
-    <!-- Name of a font family to use for body in SettingsLib. -->
-    <string name="settingslib_config_bodyFontFamily" translatable="false">
-        @*android:string/config_bodyFontFamily
-    </string>
-
-    <!-- Name of a font family to use for body-medium in SettingsLib. -->
-    <string name="settingslib_config_bodyFontFamilyMedium" translatable="false">
-        @*android:string/config_bodyFontFamilyMedium
-    </string>
+ 
     
     <!-- App lock -->
     <string name="unlock_application">Unlock <xliff:g id="label" example="Telegram">%1$s</xliff:g></string>
