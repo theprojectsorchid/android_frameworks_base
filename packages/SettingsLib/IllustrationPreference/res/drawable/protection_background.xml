@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Copyright (C) 2021 The Android Open Source Project
+    Copyright (C) 2023 The Android Open Source Project
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/settingslib_protection_color"/>
-            <corners android:radius="28dp"/>
+            <solid android:color="@android:color/transparent"/>
+            <corners android:radius="24dp"/>
             <size android:width="@dimen/settingslib_illustration_width"
                   android:height="@dimen/settingslib_illustration_height"/>
         </shape>
