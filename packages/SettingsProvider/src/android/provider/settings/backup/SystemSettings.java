@@ -91,5 +91,6 @@ public class SystemSettings {
         Settings.System.FP_WAKE_UNLOCK,
         Settings.System.NOTIFICATION_HEADERS,
         Settings.System.SENSOR_BLOCK,
+        Settings.System.HEADS_UP_NOTIFICATIONS_THRESHOLD,
     };
 }
