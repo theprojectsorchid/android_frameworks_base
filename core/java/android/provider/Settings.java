@@ -5319,7 +5319,29 @@ public final class Settings {
          * @hide
          */
         public static final String DOUBLE_TAP_SLEEP_GESTURE = "double_tap_sleep_gesture";
+	/**
+         * Settings Dashboard Style
+         * @hide
+         */
+        public static final String SETTINGS_DASHBOARD_STYLE = "settings_dashboard_style";
 
+	/**
+	 * Settings Base Layout
+	 * @hide
+	 */
+	public static final String ALT_SETTINGS_LAYOUT = "alt_settings_layout";
+
+	/**
+	 * Settings Homepage Layout
+	 * @hide
+	 */
+	public static final String USE_STOCK_LAYOUT = "use_stock_layout";
+
+	/**
+	 * Settings UserCard
+	 * @hide
+	 */
+	public static final String DISABLE_USERCARD = "disable_usercard";
 
         /**
          * Whether the torch launch gesture to double tap or long press the power button when the
@@ -5536,11 +5558,7 @@ public final class Settings {
          */
         public static final String NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD = "network_traffic_autohide_threshold";
 
-        /**
-        * @hide
-        */
-       public static final String SETTINGS_DASHBOARD_STYLE = "settings_dashboard_style";
-
+    
         /**
          * @hide
          */
