@@ -5257,6 +5257,30 @@ public final class Settings {
          */
         public static final String LESS_BORING_HEADS_UP = "less_boring_heads_up";
 
+	/**
+         * Settings Dashboard Style
+         * @hide
+         */
+        public static final String SETTINGS_DASHBOARD_STYLE = "settings_dashboard_style";
+
+	/**
+	 * Settings Base Layout
+	 * @hide
+	 */
+	public static final String ALT_SETTINGS_LAYOUT = "alt_settings_layout";
+
+	/**
+	 * Settings Homepage Layout
+	 * @hide
+	 */
+	public static final String USE_STOCK_LAYOUT = "use_stock_layout";
+
+	/**
+	 * Settings UserCard
+	 * @hide
+	 */
+	public static final String DISABLE_USERCARD = "disable_usercard";
+
         /**
          * Volume panel on left
          * @hide
