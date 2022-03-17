@@ -5444,6 +5444,15 @@ public final class Settings {
          */
         public static final String VOLUME_ROCKER_WAKE = "volume_rocker_wake";
 
+
+
+        /**
+         * Settings Dashboard Style
+         * @hide
+         */
+        public static final String SETTINGS_DASHBOARD_GMS = "settings_dashboard_gms";
+
+        
         /**
          * @hide
          * Whether the phone vibrates on call connect
@@ -5462,6 +5471,7 @@ public final class Settings {
          * @hide
          */
         public static final String VIBRATE_ON_DISCONNECT = "vibrate_on_disconnect";
+
 
         /**
          * Battery style
