@@ -197,8 +197,5 @@ public class SecureSettings {
         Settings.Secure.POWER_MENU_HIDE_ON_SECURE,
         Settings.Secure.SYSTEM_BLACK_THEME,
         Settings.Secure.ENABLE_LOCATION_PRIVACY_INDICATOR,
-        Settings.Secure.QS_SHOW_BRIGHTNESS,
-        Settings.Secure.QS_BRIGHTNESS_POSITION_BOTTOM,
-        Settings.Secure.QS_SHOW_AUTO_BRIGHTNESS_BUTTON,
     };
 }

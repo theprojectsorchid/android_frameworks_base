@@ -10613,6 +10613,25 @@ public final class Settings {
         public static final String SYSTEM_BLACK_THEME = "system_black_theme";
 
         /**
+         * Whether to show the brightness slider in quick settings panel.
+         * @hide
+         */
+        public static final String QS_SHOW_BRIGHTNESS_SLIDER = "qs_show_brightness_slider";
+
+        /**
+         * Whether to show the brightness slider in quick settings panel.
+         * 0 = Top, 1 = Bottom
+         * @hide
+         */
+        public static final String QS_BRIGHTNESS_SLIDER_POSITION = "qs_brightness_slider_position";
+
+        /**
+         * Whether to show the auto brightness icon in quick settings panel.
+         * @hide
+         */
+        public static final String QS_SHOW_AUTO_BRIGHTNESS = "qs_show_auto_brightness";
+
+        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *
@@ -10735,26 +10754,6 @@ public final class Settings {
          */
         public static final String ENABLE_LOCATION_PRIVACY_INDICATOR = "enable_location_privacy_indicator";
         
- 
-        /**
-         * Whether to show QS brightness slider
-         * @hide
-         */
-        @Readable
-        public static final String QS_SHOW_BRIGHTNESS = "qs_show_brightness";
-
-        /**
-         * Whether to show QS brightness slider below the tiles
-         * @hide
-         */
-        @Readable
-        public static final String QS_BRIGHTNESS_POSITION_BOTTOM = "qs_brightness_position_bottom";
-
-        /**
-         * Whether to show QS auto brightness toggle button
-         * @hide
-         */
-        public static final String QS_SHOW_AUTO_BRIGHTNESS_BUTTON = "qs_show_auto_brightness_button";
 
         /**
          * Control whether GMS is enabled for this user.
