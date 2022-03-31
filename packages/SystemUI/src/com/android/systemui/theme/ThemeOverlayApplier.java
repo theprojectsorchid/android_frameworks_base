@@ -137,7 +137,7 @@ public class ThemeOverlayApplier implements Dumpable {
     private final String mLauncherPackage;
     private final String mThemePickerPackage;
 
-    private boolean mIsBlackTheme;
+    private boolean mIsBlackTheme, mIsNusantaraClearTheme;
 
     public ThemeOverlayApplier(OverlayManager overlayManager,
             Executor bgExecutor,
@@ -241,10 +241,29 @@ public class ThemeOverlayApplier implements Dumpable {
         mIsBlackTheme = black;
     }
 
+    public void setIsNusantaraClearTheme(boolean nusantaraclear) {
+        mIsNusantaraClearTheme = nusantaraclear;
+    }
+
     public void applyBlackTheme(boolean enable) {
         mBgExecutor.execute(() -> {
             try {
                 mOverlayManager.setEnabled("com.android.system.theme.black",
+                        enable, UserHandle.SYSTEM);
+            } catch (SecurityException | IllegalStateException e) {
+                Log.e(TAG, "setEnabled failed", e);
+            }
+        });
+    }
+
+    public void applyNusantaraClearTheme(boolean enable) {
+        mBgExecutor.execute(() -> {
+            try {
+                mOverlayManager.setEnabled("com.android.system.theme.nusantara.clear",
+                        enable, UserHandle.SYSTEM);
+                mOverlayManager.setEnabled("com.android.systemui.theme.nusantara.clear",
+                        enable, UserHandle.SYSTEM);
+                mOverlayManager.setEnabled("com.android.settings.theme.nusantara.clear",
                         enable, UserHandle.SYSTEM);
             } catch (SecurityException | IllegalStateException e) {
                 Log.e(TAG, "setEnabled failed", e);
@@ -267,7 +286,7 @@ public class ThemeOverlayApplier implements Dumpable {
         }
 
         if (OVERLAY_CATEGORY_SYSTEM_PALETTE.equals(category)) {
-            enabled = enabled && !mIsBlackTheme;
+            enabled = enabled && !mIsBlackTheme && !mIsNusantaraClearTheme;
         }
 
         OverlayInfo overlayInfo = mOverlayManager.getOverlayInfo(identifier,
