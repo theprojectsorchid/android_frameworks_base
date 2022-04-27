@@ -279,6 +279,10 @@ public class TileLayout extends ViewGroup implements QSTileLayout {
     public int getTilesHeight() {
         return mLastTileBottom + getPaddingBottom();
     }
+    @Override
+    public void updateSettings() {
+        requestLayout();
+    }
 
     @Override
     public void setSquishinessFraction(float squishinessFraction) {

@@ -90,5 +90,7 @@ public class SystemSettings {
         Settings.System.NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD,
         Settings.System.FP_WAKE_UNLOCK,
         Settings.System.NOTIFICATION_HEADERS,
+        Settings.System.QS_TILE_LABEL_HIDE,
+        Settings.System.QS_TILE_VERTICAL_LAYOUT,
     };
 }

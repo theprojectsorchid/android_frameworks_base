@@ -93,6 +93,10 @@ public abstract class QSPanelControllerBase<T extends QSPanel> extends ViewContr
                         mLastOrientation = newConfig.orientation;
                         switchTileLayout(false);
                     }
+                    if (mView.getTileLayout() != null) {
+                        mView.getTileLayout().updateSettings();
+                        setTiles();
+                    }
                 }
             };
 
@@ -154,6 +158,9 @@ public abstract class QSPanelControllerBase<T extends QSPanel> extends ViewContr
 
     @Override
     protected void onViewAttached() {
+
+        registerObserver(Settings.System.QS_TILE_LABEL_HIDE, UserHandle.USER_CURRENT);
+        registerObserver(Settings.System.QS_TILE_VERTICAL_LAYOUT, UserHandle.USER_CURRENT);
         mQsTileRevealController = createTileRevealController();
         if (mQsTileRevealController != null) {
             mQsTileRevealController.setExpansion(mRevealExpansion);
@@ -167,6 +174,15 @@ public abstract class QSPanelControllerBase<T extends QSPanel> extends ViewContr
         switchTileLayout(true);
 
         mDumpManager.registerDumpable(mView.getDumpableTag(), this);
+    }
+
+    protected void registerObserver(String key) {
+        registerObserver(key, UserHandle.USER_ALL);
+    }
+
+    private void registerObserver(String key, int user) {
+        mSystemSettings.registerContentObserverForUser(
+            key, mSettingsObserver, user);
     }
 
     @Override
