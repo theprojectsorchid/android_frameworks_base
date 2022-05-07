@@ -91,9 +91,9 @@
     <ImageView
         android:id="@+id/global_screenshot_preview"
         android:visibility="invisible"
-        android:layout_width="@dimen/global_screenshot_x_scale"
+        android:layout_width="18sp"
         android:layout_margin="4dp"
-        android:layout_height="wrap_content"
+        android:layout_height="18sp"
         android:layout_gravity="center"
         android:elevation="@dimen/screenshot_preview_elevation"
         android:contentDescription="@string/screenshot_edit_description"
