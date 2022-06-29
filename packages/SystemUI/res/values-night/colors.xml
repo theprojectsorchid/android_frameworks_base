@@ -101,4 +101,6 @@
     <color name="people_tile_background">@color/GM2_blue_300</color>
 
     <color name="volume_seekbar_bg">@android:color/system_accent2_700</color>
+
+     <color name="qs_translucent_bg">#0FFFFFFF</color>
 </resources>
