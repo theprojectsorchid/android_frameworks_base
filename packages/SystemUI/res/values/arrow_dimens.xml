@@ -33,4 +33,15 @@
     <!--     Privacy Indicators. -->
     <dimen name="ongoing_appops_chip_main_padding">10dp</dimen>
     <dimen name="ongoing_appops_chip_2_width">56dp</dimen>
+
+     <!-- QS tile -->
+    <dimen name="kscope_qs_tile_text_size">11sp</dimen>
+    <dimen name="kscope_qs_tile_secondary_text_size">9sp</dimen>
+    <dimen name="kscope_qs_tile_icon_background_size">48dp</dimen>
+    <dimen name="kscope_qs_tile_icon_padding">2dp</dimen>
+    <dimen name="kscope_qs_tile_label_padding_top">7dp</dimen>
+    <dimen name="kscope_qs_tile_height">92dp</dimen>
+    <dimen name="kscope_qs_tile_chevron_width">10dp</dimen>
+    <dimen name="kscope_qs_tile_chevron_height">12dp</dimen>
+
 </resources>
