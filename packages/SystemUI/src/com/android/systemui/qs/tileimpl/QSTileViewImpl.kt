@@ -64,7 +64,7 @@ open class QSTileViewImpl @JvmOverloads constructor(
         private const val LABEL_NAME = "label"
         private const val SECONDARY_LABEL_NAME = "secondaryLabel"
         private const val CHEVRON_NAME = "chevron"
-        const val UNAVAILABLE_ALPHA = 0.3f
+        const val UNAVAILABLE_ALPHA = 0.65f
         @VisibleForTesting
         internal const val TILE_STATE_RES_PREFIX = "tile_states_"
     }
@@ -85,7 +85,7 @@ open class QSTileViewImpl @JvmOverloads constructor(
 
     private val colorActive = Utils.getColorAttrDefaultColor(context,
             android.R.attr.colorAccent)
-    private val colorInactive = Utils.getColorAttrDefaultColor(context, R.attr.offStateColor)
+    private val colorInactive = resources.getColor(R.color.qs_translucent_bg)
     private val colorUnavailable = Utils.applyAlpha(UNAVAILABLE_ALPHA, colorInactive)
 
     private val colorLabelActive =
