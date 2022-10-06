@@ -4237,7 +4237,22 @@ public final class Settings {
          */
         @Readable
         public static final String FONT_SCALE = "font_scale";
-       
+        
+      
+       /**
+         * Sensor blocked packages
+         * @hide
+         */
+        @Readable
+        public static final String SENSOR_BLOCKED_APP = "sensor_blocked_app";
+
+        /**
+         * Sensor blocked packages dummy
+         * @hide
+         */
+        @Readable
+        public static final String SENSOR_BLOCKED_APP_DUMMY = "sensor_blocked_app_dummy";
+
         /**
          * Sensor block per-package
          * @hide
