@@ -376,6 +376,8 @@ public class CrystalUtils {
         private Toast mToast;
 
         private boolean mSleepModeEnabled;
+        private boolean mScarletAggresiveMode;
+        private boolean mScarletBasicMode;
 
         private static boolean mWifiState;
         private static boolean mCellularState;
@@ -387,7 +389,9 @@ public class CrystalUtils {
 
         private static final String TAG = "SleepModeController";
         private static final int SLEEP_NOTIFICATION_ID = 727;
+        private static final int SCARLET_NOTIFICATION_ID = 728;
         public static final String SLEEP_MODE_TURN_OFF = "android.intent.action.SLEEP_MODE_TURN_OFF";
+        public static final String SCARLET_SERVICES = "android.intent.action.SCARLET_SERVICES";
 
         public SleepModeController(Context context) {
             mContext = context;
@@ -402,6 +406,12 @@ public class CrystalUtils {
 
             mSleepModeEnabled = Settings.Secure.getIntForUser(mContext.getContentResolver(),
                     Settings.Secure.SLEEP_MODE_ENABLED, 0, UserHandle.USER_CURRENT) == 1;
+
+            mScarletBasicMode = Settings.System.getIntForUser(mContext.getContentResolver(),
+                    Settings.System.SCARLET_IDLE_ASSISTANT_MANAGER, 0, UserHandle.USER_CURRENT) == 1;
+
+            mScarletAggresiveMode = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.SCARLET_AGGRESSIVE_MODE, 0, UserHandle.USER_CURRENT) == 1;
 
             SettingsObserver observer = new SettingsObserver(new Handler(Looper.getMainLooper()));
             observer.observe();
@@ -544,6 +554,51 @@ public class CrystalUtils {
             }
         }
 
+        private void scarletAggEnable() {
+            if (!ActivityManager.isSystemReady()) return;
+
+            // Disable Wi-Fi
+            final boolean scarletDisableWifi = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.SCARLET_AGGRESSIVE_MODE_WIFI_TOGGLE, 0, UserHandle.USER_CURRENT) == 1;
+            if (scarletDisableWifi) {
+                mWifiState = isWifiEnabled();
+                setWifiEnabled(false);
+            }
+
+            // Disable Bluetooth
+            final boolean scarletDisableBluetooth = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.SCARLET_AGGRESSIVE_MODE_BLUETOOTH_TOGGLE, 0, UserHandle.USER_CURRENT) == 1;
+            if (scarletDisableBluetooth) {
+                mBluetoothState = isBluetoothEnabled();
+                setBluetoothEnabled(false);
+            }
+
+            // Disable Mobile Data
+            final boolean scarletDisableData = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.SCARLET_AGGRESSIVE_MODE_CELLULAR_TOGGLE, 0, UserHandle.USER_CURRENT) == 1;
+            if (scarletDisableData) {
+                mCellularState = getTelephonyManager().isDataEnabled();
+                getTelephonyManager().setDataEnabled(false);
+            }
+
+            // Disable Location
+            final boolean scarletDisableLocation = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.SCARLET_AGGRESSIVE_MODE_LOCATION_TOGGLE, 0, UserHandle.USER_CURRENT) == 1;
+            if (scarletDisableLocation) {
+                mLocationState = getLocationMode();
+                setLocationMode(Settings.Secure.LOCATION_MODE_OFF);
+            }
+
+            // Disable Sensors
+            final boolean scarletDisableSensors = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.SCARLET_AGGRESSIVE_MODE_SENSORS_TOGGLE, 0, UserHandle.USER_CURRENT) == 1;
+            if (scarletDisableSensors) {
+                setSensorEnabled(false);
+            }
+
+            addScarletNotification();
+        }
+
         private void enable() {
             if (!ActivityManager.isSystemReady()) return;
 
@@ -605,8 +660,55 @@ public class CrystalUtils {
                 }
             }
 
-            showToast(mResources.getString(R.string.sleep_mode_enabled_toast), Toast.LENGTH_LONG);
             addNotification();
+        }
+
+        private void scarletAggDisable() {
+            if (!ActivityManager.isSystemReady()) return;
+
+            // Enable Wi-Fi
+            final boolean scarletDisableWifi = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.SCARLET_AGGRESSIVE_MODE_WIFI_TOGGLE, 0, UserHandle.USER_CURRENT) == 1;
+            if (scarletDisableWifi && mWifiState != isWifiEnabled()) {
+                setWifiEnabled(mWifiState);
+            }
+
+            // Enable Bluetooth
+            final boolean scarletDisableBluetooth = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.SCARLET_AGGRESSIVE_MODE_BLUETOOTH_TOGGLE, 0, UserHandle.USER_CURRENT) == 1;
+            if (scarletDisableBluetooth && mBluetoothState != isBluetoothEnabled()) {
+                setBluetoothEnabled(mBluetoothState);
+            }
+
+            // Enable Mobile Data
+            final boolean scarletDisableData = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.SCARLET_AGGRESSIVE_MODE_CELLULAR_TOGGLE, 0, UserHandle.USER_CURRENT) == 1;
+            if (scarletDisableData && mCellularState != getTelephonyManager().isDataEnabled()) {
+                getTelephonyManager().setDataEnabled(mCellularState);
+            }
+
+            // Enable Location
+            final boolean scarletDisableLocation = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.SCARLET_AGGRESSIVE_MODE_LOCATION_TOGGLE, 0, UserHandle.USER_CURRENT) == 1;
+            if (scarletDisableLocation && mLocationState != getLocationMode()) {
+                setLocationMode(mLocationState);
+            }
+
+            // Enable Sensors
+            final boolean scarletDisableSensors = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.SCARLET_AGGRESSIVE_MODE_SENSORS_TOGGLE, 0, UserHandle.USER_CURRENT) == 1;
+            if (scarletDisableSensors) {
+                setSensorEnabled(true);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {}
+                if (!isSensorEnabled()) {
+                    setSensorEnabled(true);
+                }
+            }
+
+            mNotificationManager.cancel(SCARLET_NOTIFICATION_ID);
+
         }
 
         private void disable() {
@@ -660,6 +762,26 @@ public class CrystalUtils {
             mNotificationManager.cancel(SLEEP_NOTIFICATION_ID);
         }
 
+        private void addScarletNotification() {
+            Intent intent = new Intent(SCARLET_SERVICES);
+            intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND | Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+            // Display a notification
+            Notification.Builder scarletBuilder = new Notification.Builder(mContext, SystemNotificationChannels.SCARLET)
+                .setTicker(mResources.getString(R.string.scarlet_notification_title))
+                .setContentTitle(mResources.getString(R.string.scarlet_notification_title))
+                .setContentText(mResources.getString(R.string.scarlet_aggressive_mode))
+                .setSmallIcon(R.drawable.ic_scarlet)
+                .setWhen(java.lang.System.currentTimeMillis())
+                .setOngoing(true)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(false);
+
+            Notification notification = scarletBuilder.build();
+            mNotificationManager.notify(SCARLET_NOTIFICATION_ID, notification);
+        }
+
         private void addNotification() {
             final Intent intent = new Intent(SLEEP_MODE_TURN_OFF);
             intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND | Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND);
@@ -695,6 +817,21 @@ public class CrystalUtils {
             });
         }
 
+        private void setScarletAggMode(boolean scarletAggEnabled) {
+            if (mScarletAggresiveMode == scarletAggEnabled) {
+                return;
+            }
+
+            mScarletAggresiveMode = scarletAggEnabled;
+
+            if (mScarletAggresiveMode) {
+                scarletAggEnable();
+            } else {
+                scarletAggDisable();
+            }
+
+        }
+
         private void setSleepMode(boolean enabled) {
             if (mSleepModeEnabled == enabled) {
                 return;
@@ -718,6 +855,12 @@ public class CrystalUtils {
                 mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor(
                         Settings.Secure.SLEEP_MODE_ENABLED), false, this,
                         UserHandle.USER_ALL);
+                mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor(
+                        Settings.Secure.SCARLET_AGGRESSIVE_MODE), false, this,
+                        UserHandle.USER_ALL);
+                mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor(
+                        Settings.Secure.SCARLET_AGGRESSIVE_MODE_TRIGGER), false, this,
+                        UserHandle.USER_ALL);
                 update();
             }
 
@@ -729,7 +872,16 @@ public class CrystalUtils {
             void update() {
                 final boolean enabled = Settings.Secure.getIntForUser(mContext.getContentResolver(),
                         Settings.Secure.SLEEP_MODE_ENABLED, 0, UserHandle.USER_CURRENT) == 1;
+                final boolean userEnabled = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                        Settings.Secure.SCARLET_AGGRESSIVE_MODE, 0, UserHandle.USER_CURRENT) == 1;
+                final boolean scarletAggEnabled = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                        Settings.Secure.SCARLET_AGGRESSIVE_MODE_TRIGGER, 0, UserHandle.USER_CURRENT) == 1;
                 setSleepMode(enabled);
+                if (userEnabled) {
+                  setScarletAggMode(scarletAggEnabled);
+                } else {
+                  setScarletAggMode(false);
+                }
             }
         }
     }
