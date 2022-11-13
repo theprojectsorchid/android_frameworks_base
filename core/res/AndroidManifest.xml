@@ -712,6 +712,9 @@
     <!-- GameSpace -->
     <protected-broadcast android:name="io.chaldeaprjkt.gamespace.action.GAME_START" />
     <protected-broadcast android:name="io.chaldeaprjkt.gamespace.action.GAME_STOP" />
+  
+    <!-- Scarlet Services -->
+    <protected-broadcast android:name="android.intent.action.SCARLET_SERVICES" />  
 
     <!-- ====================================================================== -->
     <!--                          RUNTIME PERMISSIONS                           -->
@@ -808,7 +811,6 @@
          <p>Protection level: dangerous
 
          <p> This is a hard restricted permission which cannot be held by an app until
-         the installer on record whitelists the permission. For more details see
          {@link android.content.pm.PackageInstaller.SessionParams#setWhitelistedRestrictedPermissions(Set)}.
     -->
     <permission android:name="android.permission.SEND_SMS"

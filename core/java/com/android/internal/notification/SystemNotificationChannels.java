@@ -59,6 +59,7 @@ public class SystemNotificationChannels {
     public static String DO_NOT_DISTURB = "DO_NOT_DISTURB";
     public static String ACCESSIBILITY_MAGNIFICATION = "ACCESSIBILITY_MAGNIFICATION";
     public static String ACCESSIBILITY_SECURITY_POLICY = "ACCESSIBILITY_SECURITY_POLICY";
+    public static String SCARLET = "SCARLET";
 
     public static void createAll(Context context) {
         final NotificationManager nm = context.getSystemService(NotificationManager.class);
@@ -194,10 +195,15 @@ public class SystemNotificationChannels {
                 NotificationManager.IMPORTANCE_LOW);
         channelsList.add(dndChanges);
 
+
+        NotificationChannel scarletChanges = new NotificationChannel(SCARLET,
+                context.getString(R.string.notification_channel_scarlet),
+                NotificationManager.IMPORTANCE_LOW);
+        channelsList.add(scarletChanges);
+
         final NotificationChannel newFeaturePrompt = new NotificationChannel(
                 ACCESSIBILITY_MAGNIFICATION,
                 context.getString(R.string.notification_channel_accessibility_magnification),
-                NotificationManager.IMPORTANCE_HIGH);
         newFeaturePrompt.setBlockable(true);
         channelsList.add(newFeaturePrompt);
 

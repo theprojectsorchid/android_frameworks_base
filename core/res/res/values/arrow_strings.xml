@@ -40,4 +40,10 @@
     <string name="permgrouprequest_fake_package_signature">Allow
         &lt;b><xliff:g id="app_name" example="Gmail">%1$s</xliff:g>&lt;/b> to spoof package signature?</string>
 
+ 
+    <!-- Scarlet Services -->
+    <string name="notification_channel_scarlet">Scarlet Services</string>
+    <string name="scarlet_notification_title">Scarlet Idle Services active</string>
+    <string name="scarlet_aggressive_mode">Scarlet services will aggresively optimize device usage while device is idle...</string>
+
 </resources>

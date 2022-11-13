@@ -3604,7 +3604,15 @@ public class StatusBar extends SystemUI implements
                     ScarletIdleManager.startAssistantServices();
                     ScarletIdleManager.cacheCleaner(CentralSurfaces.getPackageManagerForUser(mContext, mLockscreenUserManager.getCurrentUserId()));
                 }
+            if (Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                                              Settings.Secure.SCARLET_AGGRESSIVE_MODE, 0,
+                                              mLockscreenUserManager.getCurrentUserId()) == 1) {
+                Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                                              Settings.Secure.SCARLET_AGGRESSIVE_MODE_TRIGGER, 1,
+                                              mLockscreenUserManager.getCurrentUserId());
             }
+         }
+            
         }
 
         @Override
@@ -3640,7 +3648,14 @@ public class StatusBar extends SystemUI implements
                                               Settings.System.SCARLET_IDLE_ASSISTANT_MANAGER, 1,
                                               mLockscreenUserManager.getCurrentUserId()) == 1) {
                 ScarletIdleManager.stopManager(mContext);
-            }
+              if (Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                                                Settings.Secure.SCARLET_AGGRESSIVE_MODE, 0,
+                                                mLockscreenUserManager.getCurrentUserId()) == 1) {
+                  Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                                                Settings.Secure.SCARLET_AGGRESSIVE_MODE_TRIGGER, 0,
+                                                mLockscreenUserManager.getCurrentUserId());
+             }
+          }
         }
 
         @Override
