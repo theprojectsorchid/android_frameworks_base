@@ -32,11 +32,6 @@ license {
 prebuilt_font {
     name: "DroidSansMono.ttf",
     src: "DroidSansMono.ttf",
-    required: [
-        // Roboto-Regular.ttf provides DroidSans.ttf as a symlink to itself
-        // Roboto-Regular.ttf provides DroidSans-Bold.ttf as a symlink to itself
-        "Roboto-Regular.ttf",
-    ],
 }
 
 prebuilt_font {
@@ -44,6 +39,57 @@ prebuilt_font {
     src: "AndroidClock.ttf",
 }
 
+prebuilt_font {
+    name: "SourceSans3-Italic-VF.otf",
+    src: "SourceSans3-Italic-VF.otf",
+    product_specific: true,
+}
+
+prebuilt_font {
+    name: "SourceSans3-VF.otf",
+    src: "SourceSans3-VF.otf",
+    product_specific: true,
+}
+
+prebuilt_font {
+    name: "RobotoSystem-VF.ttf",
+    src: "RobotoSystem-VF.ttf",
+    product_specific: true,
+}
+
+prebuilt_font {
+    name: "RobotoFallback-VF.ttf",
+    src: "RobotoFallback-VF.ttf",
+}
+
+prebuilt_font {
+    name: "Recursive-VF.ttf",
+    src: "Recursive-VF.ttf",
+    product_specific: true,
+}
+
+prebuilt_font {
+    name: "NotoSans-Italic-VF.ttf",
+    src: "NotoSans-Italic-VF.ttf",
+    product_specific: true,
+}
+
+prebuilt_font {
+    name: "NotoSans-VF.ttf",
+    src: "NotoSans-VF.ttf",
+    product_specific: true,
+}
+
+prebuilt_font {
+    name: "Manrope-VF.ttf",
+    src: "Manrope-VF.ttf",
+    product_specific: true,
+}
+
+prebuilt_font {
+    name: "CutiveMono.ttf",
+    src: "FiraCode-Regular_CutiveMono.ttf",
+}
 /////////////////////////////////
 // Copies the font configuration file into system/etc for the product as fonts.xml.
 // Additional fonts should be installed to /product/fonts/ alongside a corresponding

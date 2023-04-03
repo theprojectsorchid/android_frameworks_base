@@ -17,4 +17,19 @@
 PRODUCT_PACKAGES := \
     DroidSansMono.ttf \
     AndroidClock.ttf \
+    CutiveMono.ttf \
+    Roboto-Regular.ttf \
+    Manrope-VF.ttf \
+    NotoSans-Italic-VF.ttf \
+    NotoSans-VF.ttf \
+    Recursive-VF.ttf \
+    RobotoFallback-VF.ttf \
+    RobotoSystem-VF.ttf \
+    RobotoStatic-Regular.ttf \
+    SourceSans3-Italic-VF.otf \
+    SourceSans3-VF.otf \
+    NotoSerif-BoldItalic.ttf \
+    NotoSerif-Bold.ttf \
+    NotoSerif-Italic.ttf \
+    NotoSerif-Regular.ttf \
     fonts.xml
