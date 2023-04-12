@@ -5525,6 +5525,15 @@ public final class Settings {
          */
         public static final String NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD = "network_traffic_autohide_threshold";
 
+        /**
+        * @hide
+        */
+       public static final String SETTINGS_DASHBOARD_STYLE = "settings_dashboard_style";
+
+        /**
+         * @hide
+         */
+        public static final String QS_TRANSPARENCY = "qs_transparency";
        /**
          * Should we listen for fingerprints when the screen is off?  Devices
          * with a rear-mounted sensor want this, but certain devices have
