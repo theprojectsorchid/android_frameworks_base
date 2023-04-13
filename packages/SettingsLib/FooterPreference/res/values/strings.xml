@@ -18,5 +18,5 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <!-- learn more text of footer preference [CHAR LIMIT=NONE] -->
-    <string name="settingslib_learn_more_text">Learn more</string>
+    <string name="settingslib_learn_more_text"> </string>
 </resources>
