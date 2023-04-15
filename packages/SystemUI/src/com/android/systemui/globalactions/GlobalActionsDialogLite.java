@@ -176,7 +176,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     static final String GLOBAL_ACTION_KEY_SCREENSHOT = "screenshot";
     private static final String GLOBAL_ACTION_KEY_REBOOT_RECOVERY = "reboot_recovery";
     private static final String GLOBAL_ACTION_KEY_REBOOT_BOOTLOADER = "reboot_bootloader";
-
+    private static final String GLOBAL_ACTION_KEY_ONTHEGO = "onthego";
     // See NotificationManagerService#scheduleDurationReachedLocked
     private static final long TOAST_FADE_TIME = 333;
     // See NotificationManagerService.LONG_DELAY
