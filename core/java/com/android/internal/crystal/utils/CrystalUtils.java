@@ -16,16 +16,10 @@
 
 package com.android.internal.crystal.utils;
 
-import static android.view.DisplayCutout.BOUNDS_POSITION_LEFT;
-import static android.view.DisplayCutout.BOUNDS_POSITION_RIGHT;
-import static android.provider.Settings.Global.ZEN_MODE_OFF;
+iimport static android.provider.Settings.Global.ZEN_MODE_OFF;
 import static android.provider.Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS;
-
-import android.Manifest;
-import android.app.ActivityManager;
 import android.app.ActivityThread;
-import android.app.AlertDialog;
-import android.app.IActivityManager;
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -33,78 +27,52 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.DialogInterface;
-import android.content.res.Resources;
-import android.content.om.IOverlayManager;
-import android.content.om.OverlayInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
-import android.database.ContentObserver;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.hardware.SensorManager;
-import android.hardware.SensorPrivacyManager;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.hardware.input.InputManager;
-import android.hardware.fingerprint.FingerprintManager;
-import android.location.LocationManager;
-import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
-import android.net.Uri;
-import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.graphics.Color;
 import android.os.ServiceManager;
 import android.os.SystemClock;
-import android.os.UserHandle;
-import android.provider.Settings;
-import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Display;
-import android.view.DisplayCutout;
-import android.view.DisplayInfo;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
-import android.view.Surface;
+import android.database.ContentObserver;
+import android.hardware.Sensor;
+import android.hardware.SensorPrivacyManager;
+import android.hardware.SensorManager;
+import android.location.LocationManager;
+import android.media.AudioManager;
+import android.os.UserHandle;
+import android.net.Uri;
+import android.net.wifi.WifiManager;
+import android.telephony.SubscriptionManager;
+import android.provider.Settings;
+
+import com.android.internal.statusbar.IStatusBarService;
+
+import java.util.Locale;
 import android.widget.Toast;
 
-import com.android.internal.R;
 import com.android.internal.notification.SystemNotificationChannels;
-import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.util.ArrayUtils;
+import com.android.internal.R;
 
-import java.lang.InterruptedException;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
-public class CrystalUtils {
-    private static final String TAG = "CrystalUtils";
-
-    private static final boolean DEBUG = false;
-
-    private static final int NO_CUTOUT = -1;
-
-    private static OverlayManager mOverlayService;
-
-    public static boolean isChineseLanguage() {
-       return Resources.getSystem().getConfiguration().locale.getLanguage().startsWith(
-               Locale.CHINESE.getLanguage());
-    }
+public class CatalystUtils {
 
     public static boolean isAppInstalled(Context context, String appUri) {
         try {
@@ -148,210 +116,35 @@ public class CrystalUtils {
         return isPackageInstalled(context, pkg, true);
     }
 
-    public static boolean deviceSupportsFlashLight(Context context) {
-        CameraManager cameraManager = (CameraManager) context.getSystemService(
-                Context.CAMERA_SERVICE);
+    public static boolean isPackageAvailable(Context context, String packageName) {
+        final PackageManager pm = context.getPackageManager();
         try {
-            String[] ids = cameraManager.getCameraIdList();
-            for (String id : ids) {
-                CameraCharacteristics c = cameraManager.getCameraCharacteristics(id);
-                Boolean flashAvailable = c.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
-                Integer lensFacing = c.get(CameraCharacteristics.LENS_FACING);
-                if (flashAvailable != null
-                        && flashAvailable
-                        && lensFacing != null
-                        && lensFacing == CameraCharacteristics.LENS_FACING_BACK) {
-                    return true;
-                }
-            }
-        } catch (CameraAccessException e) {
-            // Ignore
-        }
-        return false;
-    }
-
-    public static boolean isWifiOnly(Context context) {
-        ConnectivityManager cm = (ConnectivityManager)context.getSystemService(
-                Context.CONNECTIVITY_SERVICE);
-        Network[] networks = cm.getAllNetworks();
-
-        for (Network network : networks) {
-            NetworkCapabilities netCaps = cm.getNetworkCapabilities(network);
-            if (netCaps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    // Check to see if Wifi is connected
-    public static boolean isWifiConnected(Context context) {
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = null;
-        if (cm != null) {
-            activeNetwork = cm.getActiveNetworkInfo();
-        }
-        NetworkInfo wifi = null;
-        if (cm != null) {
-            wifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        }
-        return activeNetwork != null && activeNetwork.isConnectedOrConnecting() && wifi.isConnected();
-    }
-
-    // Check to see if Mobile data is connected
-    public static boolean isMobileConnected(Context context) {
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = null;
-        if (cm != null) {
-            activeNetwork = cm.getActiveNetworkInfo();
-        }
-        NetworkInfo mobile = null;
-        if (cm != null) {
-            mobile = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-        }
-        return activeNetwork != null && activeNetwork.isConnectedOrConnecting() && mobile.isConnected();
-    }
-
-    // Check to see if device supports the Fingerprint scanner
-    public static boolean hasFingerprintSupport(Context context) {
-        FingerprintManager fingerprintManager = (FingerprintManager) context.getSystemService(Context.FINGERPRINT_SERVICE);
-        return context.getApplicationContext().checkSelfPermission(Manifest.permission.USE_FINGERPRINT) == PackageManager.PERMISSION_GRANTED &&
-                (fingerprintManager != null && fingerprintManager.isHardwareDetected());
-    }
-
-    // Check to see if device not only supports the Fingerprint scanner but also if is enrolled
-    public static boolean hasFingerprintEnrolled(Context context) {
-        FingerprintManager fingerprintManager = (FingerprintManager) context.getSystemService(Context.FINGERPRINT_SERVICE);
-        return context.getApplicationContext().checkSelfPermission(Manifest.permission.USE_FINGERPRINT) == PackageManager.PERMISSION_GRANTED &&
-                (fingerprintManager != null && fingerprintManager.isHardwareDetected() && fingerprintManager.hasEnrolledFingerprints());
-    }
-
-    // Check to see if device has a camera
-    public static boolean hasCamera(Context context) {
-        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
-    }
-
-    // Check to see if device supports NFC
-    public static boolean hasNFC(Context context) {
-        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC);
-    }
-
-    // Check to see if device supports Wifi
-    public static boolean hasWiFi(Context context) {
-        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI);
-    }
-
-    // Check to see if device supports Bluetooth
-    public static boolean hasBluetooth(Context context) {
-        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH);
-    }
-
-    // Check to see if device supports an alterative ambient display package
-    public static boolean hasAltAmbientDisplay(Context context) {
-        return context.getResources().getBoolean(com.android.internal.R.bool.config_alt_ambient_display);
-    }
-
-    public static boolean deviceHasFlashlight(Context ctx) {
-        return ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
-    }
-
-    public static void toggleCameraFlash() {
-        FireActions.toggleCameraFlash();
-    }
-
-    public static void sendKeycode(int keycode) {
-        long when = SystemClock.uptimeMillis();
-        final KeyEvent evDown = new KeyEvent(when, when, KeyEvent.ACTION_DOWN, keycode, 0,
-                0, KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
-                KeyEvent.FLAG_FROM_SYSTEM | KeyEvent.FLAG_VIRTUAL_HARD_KEY,
-                InputDevice.SOURCE_KEYBOARD);
-        final KeyEvent evUp = KeyEvent.changeAction(evDown, KeyEvent.ACTION_UP);
-
-        final Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                InputManager.getInstance().injectInputEvent(evDown,
-                        InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
-            }
-        });
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                InputManager.getInstance().injectInputEvent(evUp,
-                        InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
-            }
-        }, 20);
-    }
-
-    /**
-     * Keep FireAction methods below this point.
-     * Place calls to methods above this point.
-     */
-    private static final class FireActions {
-        private static IStatusBarService mStatusBarService = null;
-        private static IStatusBarService getStatusBarService() {
-            synchronized (FireActions.class) {
-                if (mStatusBarService == null) {
-                    mStatusBarService = IStatusBarService.Stub.asInterface(
-                            ServiceManager.getService("statusbar"));
-                }
-                return mStatusBarService;
-            }
-        }
-
-        public static void killForegroundApp() {
-            IStatusBarService service = getStatusBarService();
-            if (service != null) {
-                try {
-                    service.killForegroundApp();
-                } catch (RemoteException e) {
-                    // do nothing.
-                }
-            }
-        }
-
-        public static void toggleCameraFlash() {
-            IStatusBarService service = getStatusBarService();
-            if (service != null) {
-                try {
-                    service.toggleCameraFlash();
-                } catch (RemoteException e) {
-                    // do nothing.
-                }
-            }
+            pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            int enabled = pm.getApplicationEnabledSetting(packageName);
+            return enabled != PackageManager.COMPONENT_ENABLED_STATE_DISABLED &&
+                enabled != PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER;
+        } catch (NameNotFoundException e) {
+            return false;
         }
     }
-
-    /* returns whether the device has a centered display cutout or not. */
-    public static boolean hasCenteredCutout(Context context) {
-        Display display = context.getDisplay();
-        DisplayCutout cutout = display.getCutout();
-        if (cutout != null) {
-            Point realSize = new Point();
-            display.getRealSize(realSize);
-
-            switch (display.getRotation()) {
-                case Surface.ROTATION_0: {
-                    Rect rect = cutout.getBoundingRectTop();
-                    return !(rect.left <= 0 || rect.right >= realSize.x);
-                }
-                case Surface.ROTATION_90: {
-                    Rect rect = cutout.getBoundingRectLeft();
-                    return !(rect.top <= 0 || rect.bottom >= realSize.y);
-                }
-                case Surface.ROTATION_180: {
-                    Rect rect = cutout.getBoundingRectBottom();
-                    return !(rect.left <= 0 || rect.right >= realSize.x);
-                }
-                case Surface.ROTATION_270: {
-                    Rect rect = cutout.getBoundingRectRight();
-                    return !(rect.top <= 0 || rect.bottom >= realSize.y);
-                }
-            }
+    
+    // Check if device has a notch
+    public static boolean hasNotch(Context context) {
+        int result = 0;
+        int resid;
+        int resourceId = context.getResources().getIdentifier(
+                "status_bar_height", "dimen", "android");
+        resid = context.getResources().getIdentifier("config_fillMainBuiltInDisplayCutout",
+                "bool", "android");
+        if (resid > 0) {
+            return context.getResources().getBoolean(resid);
         }
-        return false;
+        if (resourceId > 0) {
+            result = context.getResources().getDimensionPixelSize(resourceId);
+        }
+        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+        float px = 24 * (metrics.densityDpi / 160f);
+        return result > Math.round(px);
     }
 
     /**
@@ -362,7 +155,7 @@ public class CrystalUtils {
                 (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         return telephony != null && telephony.isVoiceCapable();
     }
-
+    
     public static class SleepModeController {
         private final Resources mResources;
         private final Context mUiContext;
@@ -382,10 +175,10 @@ public class CrystalUtils {
         private boolean mScarletBasicMode;
 
         private static boolean mWifiState;
+        private static boolean mLocationState;
         private static boolean mCellularState;
         private static boolean mBluetoothState;
         private static boolean mSensorState;
-        private static int mLocationState;
         private static int mRingerState;
         private static int mZenState;
 
@@ -409,10 +202,10 @@ public class CrystalUtils {
 
             mSleepModeEnabled = Settings.Secure.getIntForUser(mContext.getContentResolver(),
                     Settings.Secure.SLEEP_MODE_ENABLED, 0, UserHandle.USER_CURRENT) == 1;
-
+           
             mScarletBasicMode = Settings.System.getIntForUser(mContext.getContentResolver(),
                     Settings.System.SCARLET_IDLE_ASSISTANT_MANAGER, 0, UserHandle.USER_CURRENT) == 1;
-
+         
             mScarletAggresiveMode = Settings.Secure.getIntForUser(mContext.getContentResolver(),
                     Settings.Secure.SCARLET_AGGRESSIVE_MODE, 0, UserHandle.USER_CURRENT) == 1;
 
@@ -609,7 +402,7 @@ public class CrystalUtils {
             if (scarletDisableSensors) {
                 setSensorEnabled(false);
             }
-
+            
             addScarletNotification();
         }
 
@@ -644,8 +437,8 @@ public class CrystalUtils {
             final boolean disableLocation = Settings.Secure.getIntForUser(mContext.getContentResolver(),
                     Settings.Secure.SLEEP_MODE_LOCATION_TOGGLE, 1, UserHandle.USER_CURRENT) == 1;
             if (disableLocation) {
-                mLocationState = getLocationMode();
-                setLocationMode(Settings.Secure.LOCATION_MODE_OFF);
+                mLocationState = isLocationEnabled();
+                setLocationEnabled(false);
             }
 
             // Disable Sensors
@@ -674,6 +467,7 @@ public class CrystalUtils {
                 }
             }
 
+            showToast(mResources.getString(R.string.sleep_mode_enabled_toast), Toast.LENGTH_LONG);
             addNotification();
         }
 
@@ -720,7 +514,7 @@ public class CrystalUtils {
                     setSensorEnabled(true);
                 }
             }
-
+            
             mNotificationManager.cancel(SCARLET_NOTIFICATION_ID);
 
         }
@@ -752,8 +546,8 @@ public class CrystalUtils {
             // Enable Location
             final boolean disableLocation = Settings.Secure.getIntForUser(mContext.getContentResolver(),
                     Settings.Secure.SLEEP_MODE_LOCATION_TOGGLE, 1, UserHandle.USER_CURRENT) == 1;
-            if (disableLocation && mLocationState != getLocationMode()) {
-                setLocationMode(mLocationState);
+            if (disableLocation && mLocationState != isLocationEnabled()) {
+                setLocationEnabled(mLocationState);
             }
 
             // Enable Sensors
@@ -843,7 +637,7 @@ public class CrystalUtils {
             } else {
                 scarletAggDisable();
             }
-
+            
         }
 
         private void setSleepMode(boolean enabled) {
@@ -869,13 +663,12 @@ public class CrystalUtils {
                 mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor(
                         Settings.Secure.SLEEP_MODE_ENABLED), false, this,
                         UserHandle.USER_ALL);
-                mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor(
+                resolver.registerContentObserver(Settings.Secure.getUriFor(
                         Settings.Secure.SCARLET_AGGRESSIVE_MODE), false, this,
                         UserHandle.USER_ALL);
-                mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor(
+                resolver.registerContentObserver(Settings.Secure.getUriFor(
                         Settings.Secure.SCARLET_AGGRESSIVE_MODE_TRIGGER), false, this,
                         UserHandle.USER_ALL);
-                update();
             }
 
             @Override
@@ -897,173 +690,6 @@ public class CrystalUtils {
                   setScarletAggMode(false);
                 }
             }
-        }
-    }
-
-    public static int getCutoutType(Context context) {
-        final DisplayInfo info = new DisplayInfo();
-        context.getDisplay().getDisplayInfo(info);
-        final DisplayCutout cutout = info.displayCutout;
-        if (cutout == null) {
-            if (DEBUG) Log.v(TAG, "noCutout");
-            return NO_CUTOUT;
-        }
-        final Point displaySize = new Point();
-        context.getDisplay().getRealSize(displaySize);
-        List<Rect> cutOutBounds = cutout.getBoundingRects();
-        if (cutOutBounds != null) {
-            for (Rect cutOutRect : cutOutBounds) {
-                if (DEBUG) Log.v(TAG, "cutout left= " + cutOutRect.left);
-                if (DEBUG) Log.v(TAG, "cutout right= " + cutOutRect.right);
-                if (cutOutRect.left == 0 && cutOutRect.right > 0) {  //cutout is located on top left
-                    if (DEBUG) Log.v(TAG, "cutout position= " + BOUNDS_POSITION_LEFT);
-                    return BOUNDS_POSITION_LEFT;
-                } else if (cutOutRect.right == displaySize.x && (displaySize.x - cutOutRect.left) > 0) {  //cutout is located on top right
-                    if (DEBUG) Log.v(TAG, "cutout position= " + BOUNDS_POSITION_RIGHT);
-                    return BOUNDS_POSITION_RIGHT;
-                }
-            }
-        }
-        return NO_CUTOUT;
-    }
-
-    // Google now has a change screen resolution option but it fails to update dpi properly
-    // This function takes screen diagonal and updates dpi
-    public static void changeScreenDPI(int resolutionWidth, int resolutionHeight, float diagonalLength) {
-	int dpi = (int) (Math.sqrt((resolutionHeight*resolutionHeight) + (resolutionWidth*resolutionWidth)) / diagonalLength);
-	String command = String.format("wm density %s", Integer.toString(dpi));
-	try {
-	    Runtime.getRuntime().exec(command).waitFor();
-	} catch (IOException e) {
-            System.err.println("CrystalUtils: Error changing dpi");
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            System.err.println("CrystalUtils: Error changing dpi");
-            e.printStackTrace();
-        }
-    }
-
-    // Method to detect whether an overlay is enabled or not
-    public static boolean isThemeEnabled(String packageName) {
-        mOverlayService = new OverlayManager();
-        try {
-            List<OverlayInfo> infos = mOverlayService.getOverlayInfosForTarget("android",
-                    UserHandle.myUserId());
-            for (int i = 0, size = infos.size(); i < size; i++) {
-                if (infos.get(i).packageName.equals(packageName)) {
-                    return infos.get(i).isEnabled();
-                }
-            }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public static class OverlayManager {
-        private final IOverlayManager mService;
-
-        public OverlayManager() {
-            mService = IOverlayManager.Stub.asInterface(
-                    ServiceManager.getService(Context.OVERLAY_SERVICE));
-        }
-
-        public void setEnabled(String pkg, boolean enabled, int userId)
-                throws RemoteException {
-            mService.setEnabled(pkg, enabled, userId);
-        }
-
-        public List<OverlayInfo> getOverlayInfosForTarget(String target, int userId)
-                throws RemoteException {
-            return mService.getOverlayInfosForTarget(target, userId);
-        }
-    }
-
-    public static void restartSystemUi(Context context) {
-        new RestartSystemUiTask(context).execute();
-    }
-
-    public static void showSystemUiRestartDialog(Context context) {
-        new AlertDialog.Builder(context)
-                .setTitle(R.string.systemui_restart_title)
-                .setMessage(R.string.systemui_restart_message)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        restartSystemUi(context);
-                    }
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
-    }
-
-    private static class RestartSystemUiTask extends AsyncTask<Void, Void, Void> {
-        private Context mContext;
-
-        public RestartSystemUiTask(Context context) {
-            super();
-            mContext = context;
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            try {
-                ActivityManager am =
-                        (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
-                IActivityManager ams = ActivityManager.getService();
-                for (ActivityManager.RunningAppProcessInfo app: am.getRunningAppProcesses()) {
-                    if ("com.android.systemui".equals(app.processName)) {
-                        ams.killApplicationProcess(app.processName, app.uid);
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-    }
-
-    public static void showSettingsRestartDialog(Context context) {
-        new AlertDialog.Builder(context)
-                .setTitle(R.string.settings_restart_title)
-                .setMessage(R.string.settings_restart_message)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        restartSettings(context);
-                    }
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
-    }
-
-    public static void restartSettings(Context context) {
-        new restartSettingsTask(context).execute();
-    }
-
-    private static class restartSettingsTask extends AsyncTask<Void, Void, Void> {
-        private Context mContext;
-
-        public restartSettingsTask(Context context) {
-            super();
-            mContext = context;
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            try {
-                ActivityManager am =
-                        (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
-                IActivityManager ams = ActivityManager.getService();
-                for (ActivityManager.RunningAppProcessInfo app: am.getRunningAppProcesses()) {
-                    if ("com.android.settings".equals(app.processName)) {
-                        ams.killApplicationProcess(app.processName, app.uid);
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
         }
     }
 }
