@@ -139,19 +139,7 @@ public class systemUtils {
         }
         return needsNav;
     }
-    
-   public static void showSystemRestartDialog(Context context) {
-        new AlertDialog.Builder(context)
-                .setTitle(R.string.system_restart_title)
-                .setMessage(R.string.system_restart_message)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        restartAndroid(context);
-                    }
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
-    }
+
 
     public static void restartAndroid(Context context) {
         new restartAndroidTask(context).execute();
@@ -179,19 +167,6 @@ public class systemUtils {
             }
             return null;
         }
-    }
-
-   public static void showSettingsRestartDialog(Context context) {
-        new AlertDialog.Builder(context)
-                .setTitle(R.string.settings_restart_title)
-                .setMessage(R.string.settings_restart_message)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        restartSettings(context);
-                    }
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
     }
 
     public static void restartSettings(Context context) {
