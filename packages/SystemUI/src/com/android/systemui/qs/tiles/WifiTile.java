@@ -59,12 +59,6 @@ import com.android.systemui.statusbar.connectivity.SignalCallback;
 import com.android.systemui.statusbar.connectivity.WifiIcons;
 import com.android.systemui.statusbar.connectivity.WifiIndicators;
 import com.android.wifitrackerlib.WifiEntry;
-import com.android.systemui.statusbar.policy.KeyguardStateController;
-import com.android.systemui.statusbar.policy.NetworkController;
-import com.android.systemui.statusbar.policy.NetworkController.AccessPointController;
-import com.android.systemui.statusbar.policy.NetworkController.IconState;
-import com.android.systemui.statusbar.policy.NetworkController.SignalCallback;
-import com.android.systemui.statusbar.policy.WifiIcons;
 
 import java.util.List;
 
@@ -82,25 +76,26 @@ public class WifiTile extends QSTileImpl<SignalState> {
     protected final WifiSignalCallback mSignalCallback = new WifiSignalCallback();
     private boolean mExpectDisabled;
 
-    private final KeyguardStateController mKeyguard;
-
     @Inject
-    public WifiTile(QSHost host, NetworkController networkController,
-            ActivityStarter activityStarter, KeyguardStateController keyguardStateController) {
-        super(host);
+    public WifiTile(
+            QSHost host,
+            @Background Looper backgroundLooper,
+            @Main Handler mainHandler,
+            FalsingManager falsingManager,
+            MetricsLogger metricsLogger,
+            StatusBarStateController statusBarStateController,
+            ActivityStarter activityStarter,
+            QSLogger qsLogger,
+            NetworkController networkController,
+            AccessPointController accessPointController
+    ) {
+        super(host, backgroundLooper, mainHandler, falsingManager, metricsLogger,
+                statusBarStateController, activityStarter, qsLogger);
         mController = networkController;
         mWifiController = accessPointController;
         mDetailAdapter = (WifiDetailAdapter) createDetailAdapter();
         mController.observe(getLifecycle(), mSignalCallback);
-
-        mKeyguard = keyguardStateController;
-        final KeyguardStateController.Callback callback = new KeyguardStateController.Callback() {
-            @Override
-            public void onKeyguardShowingChanged() {
-                refreshState();
-            }
-        };
-        mKeyguard.observe(this, callback);
+        mStateBeforeClick.spec = "wifi";
     }
 
     @Override
@@ -137,7 +132,8 @@ public class WifiTile extends QSTileImpl<SignalState> {
         return WIFI_SETTINGS;
     }
 
-    private void handleClickInner() {
+    @Override
+    protected void handleClick(@Nullable View view) {
         // Secondary clicks are header clicks, just toggle.
         mState.copyTo(mStateBeforeClick);
         boolean wifiEnabled = mState.value;
@@ -156,31 +152,13 @@ public class WifiTile extends QSTileImpl<SignalState> {
     }
 
     @Override
-    protected void handleClick() {
-        if (mKeyguard.isMethodSecure() && mKeyguard.isShowing()) {
-            mActivityStarter.postQSRunnableDismissingKeyguard(() -> {
-                mHost.openPanels();
-                handleClickInner();
-            });
-            return;
-        }
-        handleClickInner();
-    }
-
-    @Override
-    protected void handleSecondaryClick() {
+    protected void handleSecondaryClick(@Nullable View view) {
         if (!mWifiController.canConfigWifi()) {
             mActivityStarter.postStartActivityDismissingKeyguard(
                     new Intent(Settings.ACTION_WIFI_SETTINGS), 0);
             return;
         }
-        if (mKeyguard.isMethodSecure() && mKeyguard.isShowing()) {
-            mActivityStarter.postQSRunnableDismissingKeyguard(() -> {
-                mHost.openPanels();
-                showDetail(true);
-            });
-            return;
-        }
+        showDetail(true);
         if (!mState.value) {
             mController.setWifiEnabled(true);
         }
