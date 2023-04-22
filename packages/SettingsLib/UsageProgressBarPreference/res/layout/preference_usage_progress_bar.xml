@@ -41,7 +41,8 @@
             android:gravity="start|center_vertical"
             android:includeFontPadding="false"
             android:paddingStart="8dp"
-             android:textColor="?android:attr/colorAccent"
+            android:textColor="?android:attr/colorAccent"
+            android:textStyle="bold"
             android:textSize="40sp" />
 
         <TextView
@@ -66,7 +67,7 @@
             android:includeFontPadding="false"
             android:paddingStart="4dp"
             android:textSize="13.5sp"
-            android:textColor="?android:attr/textColorPrimary"
+            android:textColor="?android:attr/colorAccent"
             android:visibility="visible" />
 
     </LinearLayout>
@@ -81,7 +82,7 @@
             android:id="@android:id/progress"
             style="@style/customProgressBarStyleHorizontal"
             android:layout_width="match_parent"
-            android:layout_height="70dp"
+            android:layout_height="200dp"
             android:progressDrawable="@drawable/seekbar_drawable"
             android:indeterminateDrawable="@drawable/seekbar_progress" 
             />
