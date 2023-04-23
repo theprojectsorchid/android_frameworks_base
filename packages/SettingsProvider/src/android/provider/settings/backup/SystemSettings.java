@@ -90,5 +90,5 @@ public class SystemSettings {
         Settings.System.NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD,
         Settings.System.FP_WAKE_UNLOCK,
         Settings.System.NOTIFICATION_HEADERS,
-        Settings.System.HEADS_UP_NOTIFICATIONS_THRESHOLD,
+    };
 }

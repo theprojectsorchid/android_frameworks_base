@@ -5519,13 +5519,6 @@ public final class Settings {
          * @hide
          */
         public static final String QS_TRANSPARENCY = "qs_transparency";
-       
-        /**
-         * Heads up notifications threshold
-         * Default 0
-         * @hide
-         */
-        public static final String HEADS_UP_NOTIFICATIONS_THRESHOLD = "heads_up_notifications_threshold";
 
        /**
          * These are all public system settings
