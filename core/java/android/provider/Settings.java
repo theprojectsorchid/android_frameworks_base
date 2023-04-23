@@ -5515,12 +5515,6 @@ public final class Settings {
          * @hide
          */
         public static final String FP_WAKE_UNLOCK = "fp_wake_unlock";
-        
-      
-        /**
-         * @hide
-         */
-        public static final String QS_TRANSPARENCY = "qs_transparency";
 
        /**
          * These are all public system settings
