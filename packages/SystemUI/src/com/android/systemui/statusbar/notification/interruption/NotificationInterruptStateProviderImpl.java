@@ -319,8 +319,10 @@ public class NotificationInterruptStateProviderImpl implements NotificationInter
             return false;
         }
 
-        if (entry.getImportance() < getNotificationImportanceForUser()) {
-            if (log) mLogger.logNoHeadsUpNotImportant(entry);
+        if (entry.getImportance() < NotificationManager.IMPORTANCE_HIGH) {
+            if (DEBUG_HEADS_UP) {
+                Log.d(TAG, "No heads up: unimportant notification: " + sbn.getKey());
+            }
             return false;
         }
 
@@ -365,13 +367,6 @@ public class NotificationInterruptStateProviderImpl implements NotificationInter
 
     private static String getDefaultDialerPackage(TelecomManager tm) {
         return tm != null ? tm.getDefaultDialerPackage() : "";
-    }
-
-    private int getNotificationImportanceForUser() {
-          return Settings.System.getIntForUser(
-                  mContentResolver,
-                  Settings.System.HEADS_UP_NOTIFICATIONS_THRESHOLD,
-                  NotificationManager.IMPORTANCE_HIGH, UserHandle.USER_CURRENT);
     }
 
     /**
