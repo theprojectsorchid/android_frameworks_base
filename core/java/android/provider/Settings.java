@@ -10662,12 +10662,7 @@ public final class Settings {
          */
         public static final String ENABLE_LOCATION_PRIVACY_INDICATOR = "enable_location_privacy_indicator";
         
-        /**
-         * Control whether GMS is enabled for this user.
-         * @hide
-         */
-        public static final String GMS_ENABLED = "gms_enabled";
-
+ 
         /**
          * Whether to show QS brightness slider
          * @hide
