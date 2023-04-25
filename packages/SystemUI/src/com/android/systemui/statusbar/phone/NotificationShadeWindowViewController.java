@@ -222,7 +222,7 @@ public class NotificationShadeWindowViewController {
                 Settings.Secure.DOZE_DOUBLE_TAP_GESTURE,
                 Settings.Secure.DOZE_TAP_SCREEN_GESTURE,
                 Settings.Secure.DOUBLE_TAP_TO_WAKE);
-                QS_SHOW_AUTO_BRIGHTNESS);
+                Settings.Secure.QS_SHOW_AUTO_BRIGHTNESS;
 
         GestureDetector.SimpleOnGestureListener gestureListener =
                 new GestureDetector.SimpleOnGestureListener() {
