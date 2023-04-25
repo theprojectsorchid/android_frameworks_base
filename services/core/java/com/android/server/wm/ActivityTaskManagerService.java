@@ -263,8 +263,6 @@ import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriGrantsManagerInternal;
 
-import com.android.internal.util.arcana.cutout.CutoutFullscreenController;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -777,8 +775,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
     private int mDeviceOwnerUid = Process.INVALID_UID;
 
-    private CutoutFullscreenController mCutoutFullscreenController;
-
+    private final class SettingObserver extends ContentObserver {
         private final Uri mFontScaleUri = Settings.System.getUriFor(FONT_SCALE);
         private final Uri mHideErrorDialogsUri = Settings.Global.getUriFor(HIDE_ERROR_DIALOGS);
         private final Uri mFontWeightAdjustmentUri = Settings.Secure.getUriFor(
@@ -871,23 +868,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
     public void installSystemProviders() {
         mSettingsObserver = new SettingObserver();
-
-        registerTaskStackListener(new TaskStackListener() {
-            @Override
-            public void onTaskFocusChanged(int taskId, boolean focused)  {
-                if (mGamingModeHelper == null || mRootWindowContainer == null) return;
-                final Task task = mRootWindowContainer.anyTaskForId(taskId);
-                if (task == null) return;
-                final Task rootTask = task.getRootTask();
-                if (rootTask != null && !rootTask.inPinnedWindowingMode() &&
-                        !rootTask.inFreeformWindowingMode() && rootTask.realActivity != null) {
-                    mGamingModeHelper.onTopAppChanged(rootTask.realActivity.getPackageName(), focused);
-                }
-            }
-        });
-
-        // Force full screen for devices with cutout
-        mCutoutFullscreenController = new CutoutFullscreenController(mContext);
     }
 
     public void retrieveSettings(ContentResolver resolver) {
@@ -6666,12 +6646,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 }
                 mActivityInterceptorCallbacks.put(id, callback);
             }
-        }
-    }
-
-    public boolean shouldForceCutoutFullscreen(String packageName) {
-        synchronized (this) {
-            return mCutoutFullscreenController.shouldForceCutoutFullscreen(packageName);
         }
     }
 }
