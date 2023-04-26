@@ -16848,13 +16848,6 @@ public final class Settings {
          */
         public static final String RESTRICTED_NETWORKING_MODE = "restricted_networking_mode";
 
-    
-        /**
-         * The amount of time in milliseconds before bluetooth is turned off
-         * @hide
-         */
-        public static final String BLUETOOTH_OFF_TIMEOUT = "bluetooth_off_timeout";
-
         /**
          * The amount of time in milliseconds before wifi is turned off
          * @hide
@@ -16889,6 +16882,7 @@ public final class Settings {
     /**
      * Configuration system settings, containing settings which are applied identically for all
      * defined users. Only Android can read these and only a specific configuration service can
+     * write these.
      *
      * @hide
      */
