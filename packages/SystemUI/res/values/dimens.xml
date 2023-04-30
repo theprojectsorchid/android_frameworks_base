@@ -954,22 +954,13 @@
     <!-- Size of media cards in the QSPanel carousel -->
     <dimen name="qs_media_padding">16dp</dimen>
     <dimen name="qs_media_album_size_small">72dp</dimen>
+    <dimen name="qs_media_album_size">84dp</dimen>
     <dimen name="qs_media_album_radius">14dp</dimen>
     <dimen name="qs_media_album_device_padding">26dp</dimen>
     <dimen name="qs_media_info_margin">12dp</dimen>
     <dimen name="qs_media_info_spacing">8dp</dimen>
     <dimen name="qs_media_icon_size">20dp</dimen>
     <dimen name="qs_media_icon_offset">4dp</dimen>
-    <dimen name="qs_media_panel_outer_padding">16dp</dimen>
-
-    <dimen name="dotroundCorners">300dp</dimen>
-    <dimen name="dotNotificationsRadius">24dp</dimen>
-    <dimen name="qs_media_top_margin">8dp</dimen>
-    
-    <dimen name="quick_settings_top_margin_media">4dp</dimen>
-    <dimen name="quick_settings_top_margin_media_extra">10dp</dimen>
-    <dimen name="qs_media_action_button_size">48dp</dimen>
-    <dimen name="qs_media_album_size">120dp</dimen>
     <dimen name="qs_center_guideline_padding">10dp</dimen>
     <dimen name="qs_media_action_spacing">4dp</dimen>
     <dimen name="qs_media_action_margin">12dp</dimen>

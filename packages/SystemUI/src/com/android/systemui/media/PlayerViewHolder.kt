@@ -120,6 +120,7 @@ class PlayerViewHolder private constructor(itemView: View) {
 
         val controlsIds = setOf(
                 R.id.icon,
+                R.id.app_name,
                 R.id.album_art,
                 R.id.header_title,
                 R.id.header_artist,
