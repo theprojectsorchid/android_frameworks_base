@@ -46,8 +46,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.ActivityManager;
 import android.app.Fragment;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.StatusBarManager;
 import android.content.ContentResolver;
 import android.content.pm.ResolveInfo;
@@ -58,7 +56,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Insets;
-import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -86,16 +83,11 @@ import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
 import android.view.ViewStub;
 import android.view.ViewTreeObserver;
-import android.view.ViewTreeObserver.InternalInsetsInfo;
-import android.view.ViewTreeObserver.OnComputeInternalInsetsListener;
 import android.view.WindowInsets;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintSet;
@@ -126,8 +118,6 @@ import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.classifier.Classifier;
 import com.android.systemui.classifier.FalsingCollector;
 import com.android.systemui.controls.dagger.ControlsComponent;
-import com.android.systemui.OctaviSystemUIUtils;
-import com.android.systemui.RetickerAnimations;
 import com.android.systemui.dagger.qualifiers.DisplayId;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.doze.DozeLog;
@@ -417,10 +407,6 @@ public class NotificationPanelViewController extends PanelViewController {
     private boolean mOnlyAffordanceInThisMotion;
     private ValueAnimator mQsSizeChangeAnimator;
 
-    private boolean mShowEmptyShadeView;
-
-    private String[] mAppExceptions;
-
     private boolean mQsScrimEnabled = true;
     private boolean mQsTouchAboveFalsingThreshold;
     private int mQsFalsingThreshold;
@@ -642,11 +628,6 @@ public class NotificationPanelViewController extends PanelViewController {
     private Optional<KeyguardUnfoldTransition> mKeyguardUnfoldTransition;
 
     private boolean mBlockedGesturalNavigation;
-
-    /*Reticker*/
-    private LinearLayout mReTickerComeback;
-    private ImageView mReTickerComebackIcon;
-    private TextView mReTickerContentTV;
 
     private View.AccessibilityDelegate mAccessibilityDelegate = new View.AccessibilityDelegate() {
         @Override
@@ -915,9 +896,6 @@ public class NotificationPanelViewController extends PanelViewController {
         mKeyguardBottomArea.setPreviewContainer(mPreviewContainer);
         mLastOrientation = mResources.getConfiguration().orientation;
 
-        mReTickerComeback = mView.findViewById(R.id.ticker_comeback);
-        mReTickerComebackIcon = mView.findViewById(R.id.ticker_comeback_icon);
-        mReTickerContentTV = mView.findViewById(R.id.ticker_content);
         initBottomArea();
 
         mWakeUpCoordinator.setStackScroller(mNotificationStackScrollLayoutController);
@@ -2320,9 +2298,227 @@ public class NotificationPanelViewController extends PanelViewController {
                 squishiness);
         mSplitShadeHeaderController.setQsExpandedFraction(qsExpansionFraction);
         mMediaHierarchyManager.setQsExpansion(qsExpansionFraction);
-        mNotificationStackScroller.setQsExpansionFraction(qsExpansionFraction);
-        mScrimController.setQsExpansion(qsExpansionFraction);
-        reTickerViewVisibility();
+        int qsPanelBottomY = calculateQsBottomPosition(qsExpansionFraction);
+        mScrimController.setQsPosition(qsExpansionFraction, qsPanelBottomY);
+        setQSClippingBounds();
+
+        // Only need to notify the notification stack when we're not in split screen mode. If we
+        // do, then the notification panel starts scrolling along with the QS.
+        if (!mShouldUseSplitNotificationShade) {
+            mNotificationStackScrollLayoutController.setQsExpansionFraction(qsExpansionFraction);
+        }
+
+        mDepthController.setQsPanelExpansion(qsExpansionFraction);
+    }
+
+    private void onStackYChanged(boolean shouldAnimate) {
+        if (mQs != null) {
+            if (shouldAnimate) {
+                animateNextNotificationBounds(StackStateAnimator.ANIMATION_DURATION_STANDARD,
+                        0 /* delay */);
+                mNotificationBoundsAnimationDelay = 0;
+            }
+            setQSClippingBounds();
+        }
+    };
+
+    private void onNotificationScrolled(int newScrollPosition) {
+        updateQSExpansionEnabledAmbient();
+    }
+
+    private void updateQSExpansionEnabledAmbient() {
+        final float scrollRangeToTop = mAmbientState.getTopPadding() - mQuickQsOffsetHeight;
+        mQsExpansionEnabledAmbient = mShouldUseSplitNotificationShade
+                || (mAmbientState.getScrollY() <= scrollRangeToTop);
+        setQsExpansionEnabled();
+    }
+
+    /**
+     * Updates scrim bounds, QS clipping, and KSV clipping as well based on the bounds of the shade
+     * and QS state.
+     */
+    private void setQSClippingBounds() {
+        int top;
+        int bottom;
+        int left;
+        int right;
+
+        final int qsPanelBottomY = calculateQsBottomPosition(computeQsExpansionFraction());
+        final boolean qsVisible = (computeQsExpansionFraction() > 0 || qsPanelBottomY > 0);
+
+        if (!mShouldUseSplitNotificationShade) {
+            if (mTransitioningToFullShadeProgress > 0.0f) {
+                // If we're transitioning, let's use the actual value. The else case
+                // can be wrong during transitions when waiting for the keyguard to unlock
+                top = mTransitionToFullShadeQSPosition;
+            } else {
+                final float notificationTop = getQSEdgePosition();
+                if (isOnKeyguard()) {
+                    if (mKeyguardBypassController.getBypassEnabled()) {
+                        // When bypassing on the keyguard, let's use the panel bottom.
+                        // this should go away once we unify the stackY position and don't have
+                        // to do this min anymore below.
+                        top = qsPanelBottomY;
+                    } else {
+                        top = (int) Math.min(qsPanelBottomY, notificationTop);
+                    }
+                } else {
+                    top = (int) notificationTop;
+                }
+            }
+            top += mOverStretchAmount;
+            // Correction for instant expansion caused by HUN pull down/
+            if (mMinFraction > 0f && mMinFraction < 1f) {
+                float realFraction =
+                        (getExpandedFraction() - mMinFraction) / (1f - mMinFraction);
+                top *= MathUtils.saturate(realFraction / mMinFraction);
+            }
+            bottom = getView().getBottom();
+            // notification bounds should take full screen width regardless of insets
+            left = 0;
+            right = getView().getRight() + mDisplayRightInset;
+        } else {
+            top = Math.min(qsPanelBottomY, mSplitShadeStatusBarHeight);
+            bottom = top + mNotificationStackScrollLayoutController.getHeight();
+            left = mNotificationStackScrollLayoutController.getLeft();
+            right = mNotificationStackScrollLayoutController.getRight();
+        }
+        // top should never be lower than bottom, otherwise it will be invisible.
+        top = Math.min(top, bottom);
+        applyQSClippingBounds(left, top, right, bottom, qsVisible);
+    }
+
+    private void applyQSClippingBounds(int left, int top, int right, int bottom,
+            boolean qsVisible) {
+        if (!mAnimateNextNotificationBounds || mKeyguardStatusAreaClipBounds.isEmpty()) {
+            if (mQsClippingAnimation != null) {
+                // update the end position of the animator
+                mQsClippingAnimationEndBounds.set(left, top, right, bottom);
+            } else {
+                applyQSClippingImmediately(left, top, right, bottom, qsVisible);
+            }
+        } else {
+            mQsClippingAnimationEndBounds.set(left, top, right, bottom);
+            final int startLeft = mKeyguardStatusAreaClipBounds.left;
+            final int startTop = mKeyguardStatusAreaClipBounds.top;
+            final int startRight = mKeyguardStatusAreaClipBounds.right;
+            final int startBottom = mKeyguardStatusAreaClipBounds.bottom;
+            if (mQsClippingAnimation != null) {
+                mQsClippingAnimation.cancel();
+            }
+            mQsClippingAnimation = ValueAnimator.ofFloat(0.0f, 1.0f);
+            mQsClippingAnimation.setInterpolator(Interpolators.FAST_OUT_SLOW_IN);
+            mQsClippingAnimation.setDuration(mNotificationBoundsAnimationDuration);
+            mQsClippingAnimation.setStartDelay(mNotificationBoundsAnimationDelay);
+            mQsClippingAnimation.addUpdateListener(animation -> {
+                float fraction = animation.getAnimatedFraction();
+                int animLeft = (int) MathUtils.lerp(startLeft,
+                        mQsClippingAnimationEndBounds.left, fraction);
+                int animTop = (int) MathUtils.lerp(startTop,
+                        mQsClippingAnimationEndBounds.top, fraction);
+                int animRight = (int) MathUtils.lerp(startRight,
+                        mQsClippingAnimationEndBounds.right, fraction);
+                int animBottom = (int) MathUtils.lerp(startBottom,
+                        mQsClippingAnimationEndBounds.bottom, fraction);
+                applyQSClippingImmediately(animLeft, animTop, animRight, animBottom,
+                        qsVisible /* qsVisible */);
+            });
+            mQsClippingAnimation.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mQsClippingAnimation = null;
+                    mIsQsTranslationResetAnimator = false;
+                    mIsPulseExpansionResetAnimator = false;
+                }
+            });
+            mQsClippingAnimation.start();
+        }
+        mAnimateNextNotificationBounds = false;
+        mNotificationBoundsAnimationDelay = 0;
+    }
+
+    private void applyQSClippingImmediately(int left, int top, int right, int bottom,
+            boolean qsVisible) {
+        // Fancy clipping for quick settings
+        int radius = mScrimCornerRadius;
+        boolean clipStatusView = false;
+        if (!mShouldUseSplitNotificationShade) {
+            // The padding on this area is large enough that we can use a cheaper clipping strategy
+            mKeyguardStatusAreaClipBounds.set(left, top, right, bottom);
+            clipStatusView = qsVisible;
+            float screenCornerRadius = mRecordingController.isRecording() ? 0 : mScreenCornerRadius;
+            radius = (int) MathUtils.lerp(screenCornerRadius, mScrimCornerRadius,
+                    Math.min(top / (float) mScrimCornerRadius, 1f));
+        }
+        if (mQs != null) {
+            float qsTranslation = 0;
+            boolean pulseExpanding = mPulseExpansionHandler.isExpanding();
+            if (mTransitioningToFullShadeProgress > 0.0f || pulseExpanding
+                    || (mQsClippingAnimation != null
+                        && (mIsQsTranslationResetAnimator || mIsPulseExpansionResetAnimator))) {
+                if (pulseExpanding || mIsPulseExpansionResetAnimator) {
+                    // qsTranslation should only be positive during pulse expansion because it's
+                    // already translating in from the top
+                    qsTranslation = Math.max(0, (top - mQs.getHeader().getHeight()) / 2.0f);
+                } else if (!mShouldUseSplitNotificationShade) {
+                    qsTranslation = (top - mQs.getHeader().getHeight()) * QS_PARALLAX_AMOUNT;
+                }
+            }
+            mQsTranslationForFullShadeTransition = qsTranslation;
+            updateQsFrameTranslation();
+            float currentTranslation = mQsFrame.getTranslationY();
+            mQsClipTop = (int) (top - currentTranslation);
+            mQsClipBottom = (int) (bottom - currentTranslation);
+            mQsVisible = qsVisible;
+            mQs.setFancyClipping(
+                    mQsClipTop,
+                    mQsClipBottom,
+                    radius, qsVisible
+                    && !mShouldUseSplitNotificationShade);
+        }
+        mKeyguardStatusViewController.setClipBounds(
+                clipStatusView ? mKeyguardStatusAreaClipBounds : null);
+        if (!qsVisible && mShouldUseSplitNotificationShade) {
+            // On the lockscreen when qs isn't visible, we don't want the bounds of the shade to
+            // be visible, otherwise you can see the bounds once swiping up to see bouncer
+            mScrimController.setNotificationsBounds(0, 0, 0, 0);
+        } else {
+            mScrimController.setNotificationsBounds(left, top, right, bottom);
+        }
+
+        if (mShouldUseSplitNotificationShade) {
+            mKeyguardStatusBarViewController.setNoTopClipping();
+        } else {
+            mKeyguardStatusBarViewController.updateTopClipping(top);
+        }
+
+        mScrimController.setScrimCornerRadius(radius);
+        int nsslLeft = left - mNotificationStackScrollLayoutController.getLeft();
+        int nsslRight = right - mNotificationStackScrollLayoutController.getLeft();
+        int nsslTop = top - mNotificationStackScrollLayoutController.getTop();
+        int nsslBottom = bottom;
+        int bottomRadius = mShouldUseSplitNotificationShade ? radius : 0;
+        mNotificationStackScrollLayoutController.setRoundedClippingBounds(
+                nsslLeft, nsslTop, nsslRight, nsslBottom, radius, bottomRadius);
+    }
+
+    private float getQSEdgePosition() {
+        // TODO: replace StackY with unified calculation
+        return Math.max(mQuickQsOffsetHeight * mAmbientState.getExpansionFraction(),
+                mAmbientState.getStackY() - mAmbientState.getScrollY());
+    }
+
+    private int calculateQsBottomPosition(float qsExpansionFraction) {
+        if (mTransitioningToFullShadeProgress > 0.0f) {
+            return mTransitionToFullShadeQSPosition;
+        } else {
+            int qsBottomY = (int) getHeaderTranslation() + mQs.getQsMinExpansionHeight();
+            if (qsExpansionFraction != 0.0) {
+                qsBottomY = (int) MathUtils.lerp(
+                        qsBottomY, mQs.getDesiredHeight(), qsExpansionFraction);
+            }
+            return qsBottomY;
+        }
     }
 
     private String determineAccessibilityPaneTitle() {
@@ -4613,104 +4809,4 @@ public class NotificationPanelViewController extends PanelViewController {
     public PhoneStatusBarView.TouchEventHandler getStatusBarTouchEventHandler() {
         return mStatusBarViewTouchEventHandler;
     }
-
-    /* Descendant reTicker */
-
-    public void reTickerView(boolean visibility) {
-        if (!OctaviSystemUIUtils.settingStatusBoolean("reticker_status", mView.getContext())) return;
-        if (visibility && mReTickerComeback.getVisibility() == View.VISIBLE) {
-            reTickerDismissal();
-        }
-        String reTickerContent = "";
-        boolean debug = true;
-        if (visibility && getExpandedFraction() != 1) {
-            mNotificationStackScroller.setVisibility(GONE);
-            ExpandableNotificationRow row = mHeadsUpManager.getTopEntry().getRow();
-            String pkgname = row.getEntry().getSbn().getPackageName();
-            Drawable icon = null;
-            try {
-                if (pkgname.contains("systemui")) {
-                    icon = mView.getContext().getDrawable(row.getEntry().getSbn().getNotification().icon);
-                } else {
-                    icon = mView.getContext().getPackageManager().getApplicationIcon(pkgname);
-                }
-            } catch (android.content.pm.PackageManager.NameNotFoundException e) {
-            }
-            if (row.getEntry().getSbn().getNotification().extras.getString("android.text") != null) {
-                reTickerContent = row.getEntry().getSbn().getNotification().extras.getString("android.text");
-            }
-            String reTickerAppName = row.getEntry().getSbn().getNotification().extras.getString("android.title");
-            PendingIntent reTickerIntent = row.getEntry().getSbn().getNotification().contentIntent;
-            String mergedContentText = reTickerAppName + " " + reTickerContent;
-            mReTickerComebackIcon.setImageDrawable(icon);
-            if (OctaviSystemUIUtils.settingStatusBoolean("reticker_colored", mView.getContext())) {
-                int col;
-                col = row.getEntry().getSbn().getNotification().color;
-                mAppExceptions = mView.getContext().getResources().getStringArray(R.array.app_exceptions);
-                //check if we need to override the color
-                for (int i=0; i < mAppExceptions.length; i++) {
-                    if (mAppExceptions[i].contains(pkgname)) {
-                        col = Color.parseColor(mAppExceptions[i+=1]);
-                    }
-                }
-                Drawable dw = mView.getContext().getDrawable(R.drawable.reticker_background);
-                dw.setTint(col);
-                mReTickerComeback.setBackground(dw);
-            }
-            mReTickerContentTV.setText(mergedContentText);
-            mReTickerContentTV.setSelected(true);
-            RetickerAnimations.doBounceAnimationIn(mReTickerComeback);
-            mReTickerComeback.setOnClickListener(v -> {
-                try {
-                    if (reTickerIntent != null)
-                        reTickerIntent.send();
-                } catch (PendingIntent.CanceledException e) {
-                }
-                if (reTickerIntent != null) {
-                    RetickerAnimations.doBounceAnimationOut(mReTickerComeback, mNotificationStackScroller);
-                    reTickerViewVisibility();
-                }
-            });
-        } else {
-            reTickerDismissal();
-        }
-    }
-
-    private void reTickerViewVisibility() {
-        if (!OctaviSystemUIUtils.settingStatusBoolean("reticker_status", mView.getContext())) {
-            reTickerDismissal();
-            return;
-        }
-        mNotificationStackScroller.setVisibility(getExpandedFraction() == 0 ? View.GONE : View.VISIBLE);
-        if (getExpandedFraction() > 0) mReTickerComeback.setVisibility(View.GONE);
-        if (mReTickerComeback.getVisibility() == View.VISIBLE) {
-            mReTickerComeback.getViewTreeObserver().addOnComputeInternalInsetsListener(mInsetsListener);
-        } else {
-            mReTickerComeback.getViewTreeObserver().removeOnComputeInternalInsetsListener(mInsetsListener);
-        }
-    }
-
-    public void reTickerViewUpdate() {
-        if (OctaviSystemUIUtils.settingStatusBoolean("reticker_status", mView.getContext())) return;
-        if (mReTickerComeback != null) mReTickerComeback.setBackground(mView.getContext().getDrawable(R.drawable.reticker_background));
-        if (mReTickerContentTV != null) mReTickerContentTV.setTextAppearance(mView.getContext(), R.style.TextAppearance_Notifications_reTicker);
-    }
-
-    public void reTickerDismissal() {
-        RetickerAnimations.doBounceAnimationOut(mReTickerComeback, mNotificationStackScroller);
-        mReTickerComeback.getViewTreeObserver().removeOnComputeInternalInsetsListener(mInsetsListener);
-    }
-
-    private final OnComputeInternalInsetsListener mInsetsListener = internalInsetsInfo -> {
-        internalInsetsInfo.touchableRegion.setEmpty();
-        internalInsetsInfo.setTouchableInsets(InternalInsetsInfo.TOUCHABLE_INSETS_REGION);
-        int[] mainLocation = new int[2];
-        mReTickerComeback.getLocationOnScreen(mainLocation);
-        internalInsetsInfo.touchableRegion.set(new Region(
-            mainLocation[0],
-            mainLocation[1],
-            mainLocation[0] + mReTickerComeback.getWidth(),
-            mainLocation[1] + mReTickerComeback.getHeight()
-        ));
-    };
 }

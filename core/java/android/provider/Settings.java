@@ -5447,10 +5447,6 @@ public final class Settings {
          * @hide
          */
         public static final String WAKELOCK_BLOCKING_LIST = "wakelock_blocking_list";
-      
-      /** reTicker **/
-      public static final String RETICKER_STATUS = "reticker_status";
-      public static final String RETICKER_COLORED = "reticker_colored";
 
         /**
          * Keys we no longer back up under the current schema, but want to continue to
