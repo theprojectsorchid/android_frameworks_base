@@ -42,7 +42,6 @@ import android.text.format.DateUtils;
 import android.util.ArraySet;
 import android.util.Log;
 import android.util.SparseArray;
-import android.view.HapticFeedbackConstants;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -287,7 +286,6 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
     }
 
     public void click(@Nullable View view) {
-        view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
         mMetricsLogger.write(populate(new LogMaker(ACTION_QS_CLICK).setType(TYPE_ACTION)
                 .addTaggedData(FIELD_STATUS_BAR_STATE,
                         mStatusBarStateController.getState())));
