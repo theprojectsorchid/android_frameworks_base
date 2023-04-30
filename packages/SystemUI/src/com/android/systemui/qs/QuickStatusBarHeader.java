@@ -415,23 +415,29 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         TouchAnimator.Builder builder = new TouchAnimator.Builder()
                 .addFloat(mSecurityHeaderView, "alpha", 0, 1)
                 // These views appear on expanding down
-                .addFloat(mDateView, "alpha", 1, 0, 0)
-                .addFloat(mClockDateView, "alpha", 0, 0, 1)
+                .addFloat(mDateView, "alpha", 0, 0, 1)
+                .addFloat(mClockDateView, "alpha", 1, 0, 0)
+                .addFloat(mQSCarriers, "alpha", 0, 1)
+                // Use statusbar paddings when collapsed,
+                // align with QS when expanded, and animate translation
+                .addFloat(isLayoutRtl() ? mRightLayout : mClockContainer, "translationX",
+                    mHeaderPaddingLeft + mStatusBarPaddingStart, 0)
+                .addFloat(isLayoutRtl() ? mClockContainer: mRightLayout, "translationX",
+                    -(mHeaderPaddingRight + mStatusBarPaddingEnd), 0)
                 .setListener(new TouchAnimator.ListenerAdapter() {
                     @Override
                     public void onAnimationAtEnd() {
                         super.onAnimationAtEnd();
-                        mClockDateView.setVisibility(View.VISIBLE);
+                       // mClockDateView.setVisibility(View.VISIBLE);
 			mIconContainer.setVisibility(View.VISIBLE);
 			mBatteryRemainingIcon.setVisibility(View.VISIBLE);
                     }
 
                     @Override
                     public void onAnimationStarted() {
-                        mClockDateView.setVisibility(View.GONE);
+                        //mClockDateView.setFreezeSwitching(true);
 			mIconContainer.setVisibility(View.GONE);
 			mBatteryRemainingIcon.setVisibility(View.GONE);
-                        mClockDateView.setFreezeSwitching(true);
                         setSeparatorVisibility(false);
                         if (!mIsSingleCarrier) {
                             mIconContainer.addIgnoredSlots(mRssiIgnoredSlots);
@@ -441,8 +447,7 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
                     @Override
                     public void onAnimationAtStart() {
                         super.onAnimationAtStart();
-                        mClockDateView.setFreezeSwitching(false);
-                        mClockDateView.setVisibility(View.GONE);
+                        //mClockDateView.setFreezeSwitching(false);
 			mBatteryRemainingIcon.setVisibility(View.GONE);
 			mIconContainer.setVisibility(View.GONE);
                         setSeparatorVisibility(mShowClockIconsSeparator);
