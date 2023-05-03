@@ -34,7 +34,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.android.internal.app.AlertActivity;
@@ -46,15 +45,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import ink.kscope.packageinstaller.activity.BasePackageInstallerActivity;
-
 /**
  * Send package to the package manager and handle results from package manager. Once the
  * installation succeeds, start {@link InstallSuccess} or {@link InstallFailed}.
  * <p>This has two phases: First send the data to the package manager, then wait until the package
  * manager processed the result.</p>
  */
-public class InstallInstalling extends BasePackageInstallerActivity {
+public class InstallInstalling extends AlertActivity {
     private static final String LOG_TAG = InstallInstalling.class.getSimpleName();
 
     private static final String SESSION_ID = "com.android.packageinstaller.SESSION_ID";
@@ -98,23 +95,24 @@ public class InstallInstalling extends BasePackageInstallerActivity {
             final File sourceFile = new File(mPackageURI.getPath());
             PackageUtil.AppSnippet as = PackageUtil.getAppSnippet(this, appInfo, sourceFile);
 
-            mAppIconView.setImageDrawable(as.icon);
-            mAppLabelView.setText(as.label);
-            mCancelBtn.setText(R.string.cancel);
-            hideInstallBtn();
-            mCancelBtn.setOnClickListener(view -> {
-                if (mInstallingTask != null) {
-                    mInstallingTask.cancel(true);
-                }
+            mAlert.setIcon(as.icon);
+            mAlert.setTitle(as.label);
+            mAlert.setView(R.layout.install_content_view);
+            mAlert.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel),
+                    (ignored, ignored2) -> {
+                        if (mInstallingTask != null) {
+                            mInstallingTask.cancel(true);
+                        }
 
-                if (mSessionId > 0) {
-                    getPackageManager().getPackageInstaller().abandonSession(mSessionId);
-                    mSessionId = 0;
-                }
+                        if (mSessionId > 0) {
+                            getPackageManager().getPackageInstaller().abandonSession(mSessionId);
+                            mSessionId = 0;
+                        }
 
-                setResult(RESULT_CANCELED);
-                finish();
-            });
+                        setResult(RESULT_CANCELED);
+                        finish();
+                    }, null);
+            setupAlert();
             requireViewById(R.id.installing).setVisibility(View.VISIBLE);
 
             if (savedInstanceState != null) {
@@ -181,6 +179,8 @@ public class InstallInstalling extends BasePackageInstallerActivity {
                             PackageManager.INSTALL_FAILED_INTERNAL_ERROR, null);
                 }
             }
+
+            mCancelButton = mAlert.getButton(DialogInterface.BUTTON_NEGATIVE);
         }
     }
 
@@ -229,7 +229,7 @@ public class InstallInstalling extends BasePackageInstallerActivity {
                 mInstallingTask.execute();
             } else {
                 // we will receive a broadcast when the install is finished
-                mCancelBtn.setEnabled(false);
+                mCancelButton.setEnabled(false);
                 setFinishOnTouchOutside(false);
             }
         }
@@ -245,7 +245,7 @@ public class InstallInstalling extends BasePackageInstallerActivity {
 
     @Override
     public void onBackPressed() {
-        if (mCancelBtn.isEnabled()) {
+        if (mCancelButton.isEnabled()) {
             super.onBackPressed();
         }
     }
@@ -369,7 +369,7 @@ public class InstallInstalling extends BasePackageInstallerActivity {
                         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
                 session.commit(pendingIntent.getIntentSender());
-                mCancelBtn.setEnabled(false);
+                mCancelButton.setEnabled(false);
                 setFinishOnTouchOutside(false);
             } else {
                 getPackageManager().getPackageInstaller().abandonSession(mSessionId);
