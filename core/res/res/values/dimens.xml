@@ -976,4 +976,5 @@
     <dimen name="secondary_rounded_corner_radius_top_adjustment">0px</dimen>
     <dimen name="secondary_rounded_corner_radius_bottom_adjustment">0px</dimen>
 
+    <dimen name="quick_qs_total_height">248dip</dimen>
 </resources>
