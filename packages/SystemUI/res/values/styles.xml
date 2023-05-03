@@ -120,12 +120,6 @@
         <item name="android:textColor">?android:attr/colorError</item>
     </style>
 
-    <style name="TextAppearance.QS.Clock">
-        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
-        <item name="android:textSize">22sp</item>
-    </style>
-
     <style name="TextAppearance.QS.DetailButton">
         <item name="android:textSize">@dimen/qs_detail_button_text_size</item>
         <item name="android:textColor">?android:attr/textColorSecondary</item>
