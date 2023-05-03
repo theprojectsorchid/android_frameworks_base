@@ -50,12 +50,18 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.internal.app.AlertActivity;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import ink.kscope.packageinstaller.activity.BasePackageInstallerActivity;
 
 /**
  * This activity is launched when a new application is installed via side loading
@@ -67,7 +73,7 @@ import java.util.List;
  * Based on the user response the package is then installed by launching InstallAppConfirm
  * sub activity. All state transitions are handled in this activity
  */
-public class PackageInstallerActivity extends AlertActivity {
+public class PackageInstallerActivity extends BasePackageInstallerActivity {
     private static final String TAG = "PackageInstaller";
 
     private static final int REQUEST_TRUST_EXTERNAL_SOURCE = 1;
@@ -131,32 +137,18 @@ public class PackageInstallerActivity extends AlertActivity {
     // Would the mOk button be enabled if this activity would be resumed
     private boolean mEnableOk = false;
 
-    private void startInstallConfirm(PackageInfo oldInfo) {
-        requireViewById(R.id.updating_app_view).setVisibility(View.VISIBLE); // the main layout
-        View viewToEnable; // which install_confirm view to show
-        View oldVersionView;
-        View newVersionView;
-
+    private void startInstallConfirm() {
         if (mAppInfo != null) {
-            viewToEnable = requireViewById(R.id.install_confirm_question_update);
-            oldVersionView = requireViewById(R.id.installed_app_version);
-            ((TextView)oldVersionView).setText(
-                    getString(com.android.internal.R.string.old_version_number, oldInfo.versionName));
-            oldVersionView.setVisibility(View.VISIBLE);
-            mOk.setText(R.string.update);
+            mInstallTipView.setText(R.string.install_confirm_question_update);
+            mInstallBtn.setText(R.string.update);
         } else {
             // This is a new application with no permissions.
-            viewToEnable = requireViewById(R.id.install_confirm_question);
+            mInstallTipView.setText(R.string.install_confirm_question);
         }
-        newVersionView = requireViewById(R.id.updating_app_version);
-        ((TextView)newVersionView).setText(
-                getString(com.android.internal.R.string.new_version_number, mPkgInfo.versionName));
-        viewToEnable.setVisibility(View.VISIBLE);
-        newVersionView.setVisibility(View.VISIBLE);
 
         mEnableOk = true;
-        mOk.setEnabled(true);
-        mOk.setFilterTouchesWhenObscured(true);
+        mInstallBtn.setEnabled(true);
+        mInstallBtn.setFilterTouchesWhenObscured(true);
     }
 
     /**
@@ -390,8 +382,8 @@ public class PackageInstallerActivity extends AlertActivity {
             checkIfAllowedAndInitiateInstall();
         }
 
-        if (mOk != null) {
-            mOk.setEnabled(mEnableOk);
+        if (mInstallBtn != null) {
+            mInstallBtn.setEnabled(mEnableOk);
         }
     }
 
@@ -399,9 +391,9 @@ public class PackageInstallerActivity extends AlertActivity {
     protected void onPause() {
         super.onPause();
 
-        if (mOk != null) {
+        if (mInstallBtn != null) {
             // Don't allow the install button to be clicked as there might be overlays
-            mOk.setEnabled(false);
+            mInstallBtn.setEnabled(false);
         }
     }
 
@@ -421,36 +413,33 @@ public class PackageInstallerActivity extends AlertActivity {
     }
 
     private void bindUi() {
-        mAlert.setIcon(mAppSnippet.icon);
-        mAlert.setTitle(mAppSnippet.label);
-        mAlert.setView(R.layout.install_content_view);
-        mAlert.setButton(DialogInterface.BUTTON_POSITIVE, getString(R.string.install),
-                (ignored, ignored2) -> {
-                    if (mOk.isEnabled()) {
-                        if (mSessionId != -1) {
-                            mInstaller.setPermissionsResult(mSessionId, true);
-                            finish();
-                        } else {
-                            startInstall();
-                        }
-                    }
-                }, null);
-        mAlert.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel),
-                (ignored, ignored2) -> {
-                    // Cancel and finish
-                    setResult(RESULT_CANCELED);
-                    if (mSessionId != -1) {
-                        mInstaller.setPermissionsResult(mSessionId, false);
-                    }
+        mAppIconView.setImageDrawable(mAppSnippet.icon);
+        mAppLabelView.setText(mAppSnippet.label);
+        mCancelBtn.setText(R.string.cancel);
+        mInstallBtn.setText(R.string.install);
+        mInstallBtn.setOnClickListener(view -> {
+            if (mInstallBtn.isEnabled()) {
+                if (mSessionId != -1) {
+                    mInstaller.setPermissionsResult(mSessionId, true);
                     finish();
-                }, null);
-        setupAlert();
+                } else {
+                    startInstall();
+                }
+            }
+        });
+        mCancelBtn.setOnClickListener(view -> {
+            // Cancel and finish
+            setResult(RESULT_CANCELED);
+            if (mSessionId != -1) {
+                mInstaller.setPermissionsResult(mSessionId, false);
+            }
+            finish();
+        });
 
-        mOk = mAlert.getButton(DialogInterface.BUTTON_POSITIVE);
-        mOk.setEnabled(false);
+        mInstallBtn.setEnabled(false);
 
-        if (!mOk.isInTouchMode()) {
-            mAlert.getButton(DialogInterface.BUTTON_NEGATIVE).requestFocus();
+        if (!mInstallBtn.isInTouchMode()) {
+            mCancelBtn.requestFocus();
         }
     }
 
