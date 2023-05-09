@@ -27,7 +27,6 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.graphics.PixelFormat;
-import android.graphics.drawable.Drawable;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -228,23 +227,6 @@ public class ToastPresenter {
         checkState(mView == null, "Only one toast at a time is allowed, call hide() first.");
         mView = view;
         mToken = token;
-
-                Context context = mView.getContext().getApplicationContext();
-                if (context == null) {
-                    context = mView.getContext();
-                }
-
-                ImageView appIcon = (ImageView) mView.findViewById(android.R.id.icon);
-                if (appIcon != null) {
-                    PackageManager pm = context.getPackageManager();
-                    Drawable icon = null;
-                    try {
-                        icon = pm.getApplicationIcon(mPackageName);
-                    } catch (PackageManager.NameNotFoundException e) {
-                        // nothing to do
-                    }
-                    appIcon.setImageDrawable(icon);
-                }
 
         adjustLayoutParams(mParams, windowToken, duration, gravity, xOffset, yOffset,
                 horizontalMargin, verticalMargin, removeWindowAnimations);
