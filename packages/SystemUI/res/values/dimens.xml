@@ -141,7 +141,7 @@
     <dimen name="notification_side_paddings">16dp</dimen>
 
     <!-- padding between the heads up and the statusbar -->
-    <dimen name="heads_up_status_bar_padding">8dp</dimen>
+    <dimen name="heads_up_status_bar_padding">6dp</dimen>
 
     <!-- heads up elevation that is added if the view is pinned -->
     <dimen name="heads_up_pinned_elevation">16dp</dimen>
@@ -443,7 +443,7 @@
     <dimen name="pull_span_min">25dp</dimen>
 
     <dimen name="qs_corner_radius">@*android:dimen/config_dialogCornerRadius</dimen>
-    <dimen name="qs_tile_height">64dp</dimen>
+    <dimen name="qs_tile_height">68dp</dimen>
     <dimen name="qs_tile_margin_horizontal">8dp</dimen>
     <dimen name="qs_tile_margin_vertical">@dimen/qs_tile_margin_horizontal</dimen>
     <dimen name="qs_tile_margin_top_bottom">4dp</dimen>
@@ -456,7 +456,7 @@
     -->
     <dimen name="qs_customize_header_min_height">68dp</dimen>
     <dimen name="qs_customize_internal_side_paddings">8dp</dimen>
-    <dimen name="qs_icon_size">20dp</dimen>
+    <dimen name="qs_icon_size">24dp</dimen>
     <dimen name="qs_side_view_size">28dp</dimen>
     <dimen name="qs_label_container_margin">10dp</dimen>
     <dimen name="qs_quick_tile_size">60dp</dimen>
@@ -469,7 +469,7 @@
          Scaled @dimen/qs_page_indicator-width by .4f.
     -->
     <dimen name="qs_page_indicator_dot_width">6.4dp</dimen>
-    <dimen name="qs_tile_text_size">11sp</dimen>
+    <dimen name="qs_tile_text_size">12sp</dimen>
     <dimen name="qs_panel_padding">16dp</dimen>
     <dimen name="qs_dual_tile_padding_horizontal">6dp</dimen>
     <dimen name="qs_panel_padding_bottom">0dp</dimen>
