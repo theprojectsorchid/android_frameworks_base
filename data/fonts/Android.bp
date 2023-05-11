@@ -86,10 +86,6 @@ prebuilt_font {
     product_specific: true,
 }
 
-prebuilt_font {
-    name: "CutiveMono.ttf",
-    src: "FiraCode-Regular_CutiveMono.ttf",
-}
 /////////////////////////////////
 // Copies the font configuration file into system/etc for the product as fonts.xml.
 // Additional fonts should be installed to /product/fonts/ alongside a corresponding
