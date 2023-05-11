@@ -44,6 +44,4 @@
     <dimen name="kscope_qs_tile_chevron_width">10dp</dimen>
     <dimen name="kscope_qs_tile_chevron_height">12dp</dimen>
 
-        <!-- QS Header height full -->
-    <dimen name="qs_header_height_full">200dp</dimen>
 </resources>
