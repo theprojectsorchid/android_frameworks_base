@@ -33,7 +33,4 @@
     <!--     Privacy Indicators. -->
     <dimen name="ongoing_appops_chip_main_padding">10dp</dimen>
     <dimen name="ongoing_appops_chip_2_width">56dp</dimen>
-
-        <!-- QS Header height full -->
-    <dimen name="qs_header_height_full">200dp</dimen>
 </resources>
