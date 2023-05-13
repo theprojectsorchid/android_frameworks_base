@@ -104,8 +104,6 @@ public class ThemeOverlayController extends SystemUI implements Dumpable {
     protected static final int NEUTRAL = 0;
     protected static final int ACCENT = 1;
 
-    protected static String NUSANTARA_CLEAR_THEME = "nusantara_clear_theme";
-
     private final ThemeOverlayApplier mThemeManager;
     private final UserManager mUserManager;
     private final BroadcastDispatcher mBroadcastDispatcher;
@@ -660,10 +658,7 @@ public class ThemeOverlayController extends SystemUI implements Dumpable {
                 & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
         boolean isBlackTheme = mSecureSettings.getInt(Settings.Secure.SYSTEM_BLACK_THEME, 0) == 1
                                 && nightMode;
-        boolean isNusantaraClearTheme = mSecureSettings.getInt(NUSANTARA_CLEAR_THEME, 0) == 1;
-
         mThemeManager.setIsBlackTheme(isBlackTheme);
-        mThemeManager.setIsNusantaraClearTheme(isNusantaraClearTheme);
 
         if (mNeedsOverlayCreation) {
             mNeedsOverlayCreation = false;
@@ -676,7 +671,6 @@ public class ThemeOverlayController extends SystemUI implements Dumpable {
         }
 
         mThemeManager.applyBlackTheme(isBlackTheme);
-        mThemeManager.applyNusantaraClearTheme(isNusantaraClearTheme);
     }
 
     private final ConfigurationListener mConfigurationListener = new ConfigurationListener() {
