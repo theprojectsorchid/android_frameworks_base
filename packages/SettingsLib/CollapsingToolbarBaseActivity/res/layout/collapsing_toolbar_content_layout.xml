@@ -38,7 +38,7 @@
             app:contentScrim="@color/settingslib_colorSurfaceHeader"
             app:maxLines="3"
             app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
-            app:scrimAnimationDuration="150"
+            app:scrimAnimationDuration="130"
             app:scrimVisibleHeightTrigger="@dimen/settingslib_scrim_visible_height_trigger"
             app:statusBarScrim="@null"
             app:titleCollapseMode="scale"
@@ -64,7 +64,7 @@
 
     <FrameLayout
         android:id="@+id/content_frame"
-        android:paddingTop="20.0dp"
+        android:paddingTop="2.0dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
@@ -72,7 +72,7 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="20.0dp"
+        android:layout_height="2.0dp"
         android:backgroundTint="@color/settingslib_colorSurfaceHeader"
         android:background="@drawable/nad_round_top"
         app:layout_anchor="@id/app_bar"
