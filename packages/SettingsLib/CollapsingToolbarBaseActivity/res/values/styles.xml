@@ -8,7 +8,7 @@
 
        http://www.apache.org/licenses/LICENSE-2.0
 
-  Unless required by applicable law or agreed to in writing, software
+  Unless required by applicable lor agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
@@ -17,12 +17,12 @@
 <resources>
     <style name="CollapsingToolbarTitle.Collapsed" parent="@android:style/TextAppearance.DeviceDefault.Widget.ActionBar.Title">
         <item name="android:fontFamily">@string/settingslib_config_headlineFontFamily</item>
-        <item name="android:textSize">1dp</item>
+        <item name="android:textSize">2dp</item>
         <item name="android:textColor">@color/settingslib_text_color_primary_device_default</item>
     </style>
 
     <style name="CollapsingToolbarTitle.Expanded" parent="CollapsingToolbarTitle.Collapsed">
-        <item name="android:textSize">1dp</item>
+        <item name="android:textSize">2dp</item>
         <item name="android:textColor">@color/settingslib_text_color_primary_device_default</item>
     </style>
 </resources>

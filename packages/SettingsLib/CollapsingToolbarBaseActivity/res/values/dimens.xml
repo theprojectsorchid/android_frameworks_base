@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Copyright (C) 2019 The Android Open Source Project
+  Copyright (C) 2021 The Android Open Source Project
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -13,12 +13,13 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
-  -->
-
+-->
 <resources>
-    <dimen name="secondary_app_icon_size">32dp</dimen>
-    <dimen name="app_preference_padding_start">?android:attr/listPreferredItemPaddingStart</dimen>
-    <dimen name="app_icon_min_width">56dp</dimen>
-    <dimen name="two_target_min_width">72dp</dimen>
-    <dimen name="settingslib_dialogCornerRadius">24dp</dimen>
+    <!-- Collapsing toolbar layout dimensions -->
+
+    <dimen name="settingslib_toolbar_layout_height">51dp</dimen>
+    <dimen name="settingslib_scrim_visible_height_trigger">49dp</dimen>
+
+    <dimen name="expanded_title_margin_start">24dp</dimen>
+    <dimen name="expanded_title_margin_end">75dp</dimen>
 </resources>
