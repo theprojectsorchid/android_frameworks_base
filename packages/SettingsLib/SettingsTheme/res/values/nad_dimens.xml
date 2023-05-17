@@ -17,6 +17,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <!-- Top Level Background Radius-->
-    <dimen name="nad_top_bg_radius">28dp</dimen>
+    <dimen name="nad_top_bg_radius">24dp</dimen>
 
 </resources>
