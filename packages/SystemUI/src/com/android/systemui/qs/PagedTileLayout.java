@@ -491,19 +491,6 @@ public class PagedTileLayout extends ViewPager implements QSTileLayout {
         return currentPage.mRecords.size();
     }
 
-    public int getNumTilesFirstPage() {
-        if (mPages.size() == 0) return 0;
-        return mPages.get(0).mRecords.size();
-    }
-
-    @Override
-    public void updateSettings() {
-        for (int i = 0; i < mPages.size(); i++) {
-            mPages.get(i).updateSettings();
-        }
-        mDistributeTiles = true;
-    }
-
     public void startTileReveal(Set<String> tileSpecs, final Runnable postAnimation) {
         if (tileSpecs.isEmpty() || mPages.size() < 2 || getScrollX() != 0 || !beginFakeDrag()) {
             // Do not start the reveal animation unless there are tiles to animate, multiple
