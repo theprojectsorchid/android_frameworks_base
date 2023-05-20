@@ -1,4 +1,4 @@
-qqaaqqq/*
+/*
  * Copyright (C) 2012 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -128,7 +128,7 @@ public class SystemSensorManager extends SensorManager {
     private final Context mContext;
     private final long mNativeInstance;
 
-    private Optional<Boolean> mHasHighSamplingRateSensorsPermission = Optional.empty();
+
     private String mBlockedPackageList;
     private ArrayList<String> mBlockedApp = new ArrayList<String>();
 
