@@ -307,29 +307,4 @@ public final class TwilightService extends SystemService
 
         return new TwilightState(sunriseTimeMillis, sunsetTimeMillis);
     }
-
-    private static TwilightState getManualTwilightState(long timeMillis) {
-        final Calendar sunrise = Calendar.getInstance();
-        sunrise.setTimeInMillis(timeMillis);
-        sunrise.set(Calendar.HOUR_OF_DAY, 7);
-        sunrise.set(Calendar.MINUTE, 0);
-        sunrise.set(Calendar.SECOND, 0);
-        sunrise.set(Calendar.MILLISECOND, 0);
-        final Calendar sunset = Calendar.getInstance();
-        sunset.setTimeInMillis(timeMillis);
-        sunset.set(Calendar.HOUR_OF_DAY, 20);
-        sunset.set(Calendar.MINUTE, 0);
-        sunset.set(Calendar.SECOND, 0);
-        sunset.set(Calendar.MILLISECOND, 0);
-        long sunriseMillis = sunrise.getTimeInMillis();
-        long sunsetMillis = sunset.getTimeInMillis();
-        if (sunsetMillis < timeMillis) {
-            sunrise.add(Calendar.DATE, 1);
-            sunriseMillis = sunrise.getTimeInMillis();
-        } else if (sunriseMillis > timeMillis) {
-            sunset.add(Calendar.DATE, -1);
-            sunsetMillis = sunset.getTimeInMillis();
-        }
-        return new TwilightState(sunriseMillis, sunsetMillis);
-    }
 }
