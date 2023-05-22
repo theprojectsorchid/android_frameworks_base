@@ -5488,13 +5488,6 @@ public final class Settings {
         public static final String ADAPTIVE_PLAYBACK_TIMEOUT = "adaptive_playback_timeout";
 
         /**
-         * Scarlet Idle Assistant Manager
-         * @hide
-         */
-        @Readable
-        public static final String SCARLET_IDLE_ASSISTANT_MANAGER = "scarlet_idle_assistant_manager";
-
-        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *
