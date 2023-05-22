@@ -35,6 +35,7 @@ import android.os.Handler;
 import android.os.UserHandle;
 import android.os.PowerManagerInternal;
 import android.provider.Settings;
+import android.widget.Toast;
 
 import com.android.server.LocalServices;
 import com.android.systemui.Dependency;
@@ -46,7 +47,7 @@ import java.util.List;
 public class ScarletIdleManager {
     static String TAG = "ScarletIdleManager";
 
-    static Handler scarletHandler = new Handler();
+    static Handler h = new Handler();
     static Runnable mStartManagerInstance;
     static Runnable mStopManagerInstance;
     static List<ActivityManager.RunningAppProcessInfo> RunningServices;
@@ -81,12 +82,12 @@ public class ScarletIdleManager {
         RunningServices = localActivityManager.getRunningAppProcesses();
 
         if (IDLE_TIME_NEEDED > timeBeforeAlarm(imContext) && timeBeforeAlarm(imContext) != 0) {
-            scarletHandler.postDelayed(mStartManagerInstance,100);
+            h.postDelayed(mStartManagerInstance,100);
         } else {
-            scarletHandler.postDelayed(mStartManagerInstance,IDLE_TIME_NEEDED /*10ms*/);
+            h.postDelayed(mStartManagerInstance,IDLE_TIME_NEEDED /*10ms*/);
         }
         if (timeBeforeAlarm(imContext) != 0) {
-            scarletHandler.postDelayed(mStopManagerInstance,(timeBeforeAlarm(imContext) - 900000));
+            h.postDelayed(mStopManagerInstance,(timeBeforeAlarm(imContext) - 900000));
         }
     }
 
@@ -102,6 +103,8 @@ public class ScarletIdleManager {
     }
 
     public static void powerSaverHandler(boolean enable) {
+        LocationController mController = Dependency.get(LocationController.class);
+        mController.setLocationEnabled(!enable);
         PowerManagerInternal mLocalPowerManager = LocalServices.getService(PowerManagerInternal.class);
         if (mLocalPowerManager != null) {
           mLocalPowerManager.setPowerMode(Mode.LOW_POWER, enable);
@@ -109,18 +112,19 @@ public class ScarletIdleManager {
     }
 
     public static void stopManager(Context mContext) {
-        scarletHandler.removeCallbacks(mStartManagerInstance);
+        h.removeCallbacks(mStartManagerInstance);
         onScreenWake(mContext);
     }
 
     public static void onScreenWake(Context mContext) {
-        scarletHandler.removeCallbacks(mStopManagerInstance);
+        h.removeCallbacks(mStopManagerInstance);
         syncHandler(true);
         powerSaverHandler(false);
         PowerManagerInternal mLocalPowerManager = LocalServices.getService(PowerManagerInternal.class);
         if (mLocalPowerManager != null) {
           mLocalPowerManager.setPowerBoost(Boost.INTERACTION, 2000);
         }
+        Toast.makeText(mContext, R.string.scarlet_wake_screen, Toast.LENGTH_LONG).show();
     }
 
     public static long timeBeforeAlarm(Context imContext) {
