@@ -116,7 +116,7 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
     private boolean mHeaderImageEnabled;
     private int mHeaderImageValue;
 
-    @Nullable
+    
     private TintedIconManager mTintedIconManager;
     private QSExpansionPathInterpolator mQSExpansionPathInterpolator;
     private StatusBarContentInsetsProvider mInsetsProvider;
@@ -213,7 +213,6 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         Dependency.get(TunerService.class).addTunable(this,
                 STATUS_BAR_BATTERY_STYLE,
                 QS_BATTERY_STYLE,
-                STATUS_BAR_CUSTOM_HEADER,
                 QS_HEADER_IMAGE,
                 QS_SHOW_BATTERY_PERCENT);
     }
@@ -383,15 +382,8 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
         }
 
         MarginLayoutParams qqsLP = (MarginLayoutParams) mHeaderQsPanel.getLayoutParams();
-        if (largeScreenHeaderActive) {
-            qqsLP.topMargin = mContext.getResources()
-                    .getDimensionPixelSize(R.dimen.qqs_layout_margin_top);
-        } else if (!mUseCombinedQSHeader) {
-            qqsLP.topMargin = qsOffsetHeight;
-        } else {
-            qqsLP.topMargin = SystemBarUtils.getStatusBarHeight(mContext) + mContext.getResources()
-                    .getDimensionPixelSize(R.dimen.qqs_margin_top);
-        }
+         qqsLP.topMargin = shouldUseSplitShade || !mUseCombinedQSHeader ? mContext.getResources()
+                .getDimensionPixelSize(R.dimen.qqs_layout_margin_top) : qsOffsetHeight;
         mHeaderQsPanel.setLayoutParams(qqsLP);
 
         updateHeadersPadding();
@@ -727,11 +719,6 @@ public class QuickStatusBarHeader extends FrameLayout implements TunerService.Tu
             case QS_SHOW_BATTERY_PERCENT:
                 mBatteryRemainingIcon.setBatteryPercent(
                         TunerService.parseInteger(newValue, 2));
-                break;
-            case STATUS_BAR_CUSTOM_HEADER:
-                mHeaderImageEnabled =
-                        TunerService.parseIntegerSwitch(newValue, false);
-                updateResources();
                 break;
             case QS_HEADER_IMAGE:
                 mHeaderImageValue =
