@@ -447,7 +447,7 @@
     <dimen name="qs_tile_margin_horizontal">8dp</dimen>
     <dimen name="qs_tile_margin_vertical">@dimen/qs_tile_margin_horizontal</dimen>
     <dimen name="qs_tile_margin_top_bottom">4dp</dimen>
-    <dimen name="qs_brightness_margin_top">8dp</dimen>
+    <dimen name="qs_brightness_margin_top">10dp</dimen>
     <dimen name="qs_brightness_margin_bottom">24dp</dimen>
     <dimen name="qqs_layout_margin_top">16dp</dimen>
     <!-- The height of the qs customize header. Should be
@@ -966,8 +966,8 @@
     <dimen name="qs_media_action_margin">12dp</dimen>
     <dimen name="qs_seamless_height">24dp</dimen>
     <dimen name="qs_seamless_icon_size">12dp</dimen>
-    <dimen name="qs_media_disabled_seekbar_height">1dp</dimen>
-    <dimen name="qs_media_enabled_seekbar_height">2dp</dimen>
+    <dimen name="qs_media_disabled_seekbar_height">4dp</dimen>
+    <dimen name="qs_media_enabled_seekbar_height">4dp</dimen>
     <dimen name="qs_media_enabled_seekbar_vertical_padding">28dp</dimen>
     <dimen name="qs_media_disabled_seekbar_vertical_padding">29dp</dimen>
 
@@ -1302,7 +1302,7 @@
     <dimen name="dialog_button_bar_top_padding">32dp</dimen>
 
     <!-- ************************************************************************* -->
-    <dimen name="expanded_qs_header_height">120dp</dimen>
+    <dimen name="expanded_qs_header_height">130dp</dimen>
 
     <dimen name="keyguard_unfold_translation_x">16dp</dimen>
 </resources>
