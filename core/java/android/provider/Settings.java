@@ -15706,7 +15706,6 @@ public final class Settings {
 
         // Populated lazily, guarded by class object:
         @UnsupportedAppUsage
-        private static final NameValueCache sNameValueCache = new NameValueCache(
                     CONTENT_URI,
                     CALL_METHOD_GET_GLOBAL,
                     CALL_METHOD_PUT_GLOBAL,
